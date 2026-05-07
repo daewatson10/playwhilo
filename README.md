@@ -71,3 +71,5 @@ whilo/
 - **Anthropic API** — puzzle generation (server-side only)
 - **localStorage** — saves progress per day, no database needed at launch
 - **Web Speech API** — browser-native audio read-aloud
+
+launch
