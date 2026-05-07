@@ -1,16 +1,11 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = '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';
-  if (!apiKey) return res.status(500).json({ error: 'NO KEY FOUND' });
+  const apiKey = process.env.ANTHROPIC_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'NO KEY' });
 
   const { date, weekTheme, type } = req.body;
-
-  const CLUE_SYSTEM = `You are the puzzle designer for Whilo, a mindful daily word game.
-CLUE RULES: Concept = philosophical essence without naming the word. Context = specific vivid real-world scene, never vague. Behavior = what the word actively does to people or situations.
-RIDDLE: Poetic, metaphorical, 2-4 guesses average. No cliches. No greeting-card wisdom.
-REFLECTION: 260-300 words. Word used 5 times. Honest and grounded tone.
-Return ONLY raw JSON. No markdown fences.`;
+  const theme = weekTheme || 'Reflection';
 
   try {
     if (type === 'weekTheme') {
@@ -24,8 +19,7 @@ Return ONLY raw JSON. No markdown fences.`;
         body: JSON.stringify({
           model: 'claude-haiku-4-5',
           max_tokens: 200,
-          system: 'Return ONLY raw JSON, no markdown.',
-          messages: [{ role: 'user', content: 'Generate a weekly theme for Whilo. Return ONLY: {"theme_name":"Patience","theme_description":"A week on waiting"}' }]
+          messages: [{ role: 'user', content: 'Generate a weekly theme for Whilo (a mindful word game). Return ONLY raw JSON no markdown: {"theme_name":"Patience","theme_description":"A week on waiting"}' }]
         })
       });
       const d = await r.json();
@@ -37,15 +31,6 @@ Return ONLY raw JSON. No markdown fences.`;
     const parsedDate = new Date(date + 'T12:00:00');
     const dateLabel = parsedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
     const isSunday = parsedDate.getDay() === 0;
-    const theme = weekTheme || 'Reflection';
-    const useWorld = Math.random() > 0.55;
-    const worldInstruction = useWorld
-      ? 'Include "world_note": 1-2 sentences connecting the word to a real universal human observation — never political.'
-      : 'Set "world_note": null.';
-
-    const prompt = `Date: ${dateLabel}. Theme: "${theme}". ${isSunday ? 'Sunday — hardest puzzle of week.' : ''} ${worldInstruction}
-Return ONLY raw JSON:
-{"word":"WORD","riddle":"riddle","concept_clue":"clue","context_clue":"clue","behavior_clue":"clue","reflection":"260-300w using word 5x","world_note":null,"challenge":"Today sentence","journal_prompt":"open question","solved_subtitle":"short poetic line","week_theme":"${theme}"}`;
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -57,18 +42,46 @@ Return ONLY raw JSON:
       body: JSON.stringify({
         model: 'claude-haiku-4-5',
         max_tokens: 1200,
-        system: CLUE_SYSTEM,
-        messages: [{ role: 'user', content: prompt }]
+        messages: [{
+          role: 'user',
+          content: `You are the puzzle designer for Whilo, a mindful daily word game.
+
+Create a puzzle for ${dateLabel}. Week theme: "${theme}". ${isSunday ? 'Sunday — make it the hardest of the week.' : ''}
+
+Rules:
+- Pick a conceptually rich word (emotion, state, phenomenon)
+- Riddle: poetic and metaphorical, 2-4 guesses average, no cliches
+- Concept clue: philosophical essence without naming the word
+- Context clue: specific vivid real-world scene
+- Behavior clue: what the word does to people or situations
+- Reflection: 270 words, honest grounded tone, use the word exactly 5 times
+- No greeting-card wisdom
+
+Return ONLY this raw JSON with no markdown fences:
+{
+  "word": "WORD",
+  "riddle": "poetic riddle here",
+  "concept_clue": "abstract clue",
+  "context_clue": "specific scene clue",
+  "behavior_clue": "effect clue",
+  "reflection": "270 word reflection",
+  "world_note": null,
+  "challenge": "Today do something...",
+  "journal_prompt": "An open question...",
+  "solved_subtitle": "Short poetic line",
+  "week_theme": "${theme}"
+}`
+        }]
       })
     });
 
     const d = await r.json();
     if (d.error) return res.status(500).json({ error: d.error.message });
-    const puzzle = JSON.parse(d.content[0].text.trim().replace(/```json|```/g, '').trim());
+    const text = d.content[0].text.trim().replace(/```json|```/g, '').trim();
+    const puzzle = JSON.parse(text);
     return res.status(200).json({ ...puzzle, date, guesses: [], cluesUsed: [] });
 
   } catch (e) {
-    console.error('Puzzle error:', e);
     return res.status(500).json({ error: e.message });
   }
 }
