@@ -19,7 +19,7 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
+          model: 'claude-haiku-4-5',
           max_tokens: 200,
           system: 'Return ONLY raw JSON, no markdown.',
           messages: [{ role: 'user', content: 'Generate a weekly theme for Whilo (mindful word game). Return ONLY: {"theme_name":"Patience","theme_description":"A week on waiting"}' }]
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-4-5',
         max_tokens: 1200,
         system: CLUE_SYSTEM,
         messages: [{
