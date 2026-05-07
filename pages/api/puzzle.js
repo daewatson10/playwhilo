@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = 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;
+  const apiKey = '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';
   if (!apiKey) return res.status(500).json({ error: 'NO KEY FOUND' });
 
   const { date, weekTheme, type } = req.body;
