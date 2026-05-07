@@ -63,7 +63,7 @@ whilo/
 │   └── favicon.ico     ← Add your own
 ├── .env.example        ← Copy to .env.local, add your key
 └── .gitignore
-```
+``` 
 
 ## Tech stack
 
