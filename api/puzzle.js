@@ -9,33 +9,32 @@ export default async function handler(req, res) {
 
   const SYSTEM = `You are the puzzle designer for Whilo, a mindful daily word game.
 
-WORD SELECTION — this is the most important rule:
+WORD SELECTION — most important rule:
 - Pick a CONCRETE or semi-concrete word. Good examples: tide, ember, harbor, fog, mirror, threshold, drift, anchor, clearing, echo, gravity, current, shadow, bloom, weight
 - The word can be a noun, a place, or a simple verb used as a concept
-- NEVER pick abstract states ending in -ness, -tion, -ity, -ance, -ment (no stillness, awareness, resilience, patience)
+- NEVER pick abstract states ending in -ness, -tion, -ity, -ance, -ment
 - The word should be 4-8 letters
-- Target difficulty: someone should guess it in 2-3 tries with all 3 clues revealed
-- After clue 1: ~20% of players should get it. After clue 2: ~50%. After clue 3: ~80%
+- Target difficulty: someone should guess it in 2-3 tries with clues revealed
+- After clue 1: 20% guess it. After clue 2: 50%. After clue 3: 80%
 
-CLUE RULES — each clue must narrow the answer to roughly 10 possible words:
-- CONCEPT clue: the idea or feeling the word evokes. Should make someone think "oh that's interesting" and narrow their thinking significantly
-- CONTEXT clue: a specific vivid real-world scene where this word lives. NOT vague. Example for TIDE: "What a fisherman checks before leaving the harbor at dawn"
-- BEHAVIOR clue: what the word does to people, places, or things. An active effect. Example for TIDE: "It pulls at things without ever touching them"
+CLUE RULES:
+- CONCEPT clue: the idea or feeling the word evokes. Narrows thinking significantly
+- CONTEXT clue: specific vivid real-world scene where this word lives. NOT vague
+- BEHAVIOR clue: what the word actively does to people, places, or things
 
 RIDDLE RULES:
 - 2-3 sentences MAX. Every sentence must earn its place. No filler.
-- Clever and playful with a light wit — like you're teasing the player, not lecturing them
+- Clever and playful with a light wit — like you are teasing the player, not lecturing them
 - Use unexpected comparisons that make someone smile or raise an eyebrow
-- A little mischief is good. Think "game" not "meditation prompt"
-- Still poetic but with personality — the player should feel like they're being outsmarted by a friend
-- After reading it, players should have a general direction even without clues
+- A little mischief is good. Think game not meditation prompt
+- Still poetic but with personality — the player should feel like they are being outsmarted by a friend
+- After reading it players should have a general direction even without clues
 
 REFLECTION (Today's Thread):
 - 260-300 words. Use the word naturally exactly 5 times
 - Tone: honest, warm, grounded. Occasionally wry
-- NOT motivational-poster language. Write like something you'd underline in a good essay
+- NOT motivational-poster language. Write like something you would underline in a good essay
 - Connect to real human experience — relationships, work, nature, daily life
-- About 40% of the time connect to a current real-world observation (never political)
 
 Return ONLY raw JSON. No markdown fences. No extra text.`;
 
@@ -61,7 +60,7 @@ Return ONLY raw JSON. No markdown fences. No extra text.`;
     const isSunday = parsedDate.getDay() === 0;
     const useWorld = Math.random() > 0.6;
     const worldInstruction = useWorld
-      ? 'Include "world_note": 1-2 sentences connecting the word to a real universal human or natural observation happening in the world — never political, never divisive.'
+      ? 'Include "world_note": 1-2 sentences connecting the word to a real universal human or natural observation — never political.'
       : 'Set "world_note": null.';
 
     const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -76,20 +75,20 @@ Return ONLY raw JSON. No markdown fences. No extra text.`;
           content: `Create a Whilo daily puzzle.
 Date: ${dateLabel}
 Week theme: "${theme}"
-${isSunday ? 'This is Sunday — slightly harder than usual, and the word should connect to the week theme.' : ''}
+${isSunday ? 'This is Sunday — slightly harder than usual, word should connect to the week theme.' : ''}
 ${worldInstruction}
 
 Return ONLY this raw JSON with no markdown:
 {
   "word": "CONCRETE_WORD",
-  "riddle": "3-4 sentence poetic riddle",
+  "riddle": "2-3 sentence playful poetic riddle",
   "concept_clue": "the idea or feeling this word evokes",
   "context_clue": "specific vivid real-world scene",
   "behavior_clue": "what this word actively does",
   "reflection": "260-300 words using the word exactly 5 times",
   "world_note": null,
   "challenge": "Today do one specific gentle action tied to the word",
-  "journal_prompt": "One honest open-ended question connecting this word to the reader's life",
+  "journal_prompt": "One honest open-ended question connecting this word to the readers life",
   "solved_subtitle": "Short poetic line for the word reveal moment",
   "week_theme": "${theme}"
 }`
