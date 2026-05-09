@@ -23,9 +23,11 @@ CLUE RULES — each clue must narrow the answer to roughly 10 possible words:
 - BEHAVIOR clue: what the word does to people, places, or things. An active effect. Example for TIDE: "It pulls at things without ever touching them"
 
 RIDDLE RULES:
-- Poetic and metaphorical but not impossibly abstract
-- Should feel like a satisfying puzzle, not a philosophy exam
-- 3-4 sentences max
+- 2-3 sentences MAX. Every sentence must earn its place. No filler.
+- Clever and playful with a light wit — like you're teasing the player, not lecturing them
+- Use unexpected comparisons that make someone smile or raise an eyebrow
+- A little mischief is good. Think "game" not "meditation prompt"
+- Still poetic but with personality — the player should feel like they're being outsmarted by a friend
 - After reading it, players should have a general direction even without clues
 
 REFLECTION (Today's Thread):
