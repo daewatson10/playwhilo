@@ -98,28 +98,31 @@ export default function Home() {
     if (!guessInput.trim() || !activePuzzle) return
     const raw = guessInput.trim()
 
-    // Check if real word
     const isReal = await fetch(
       `https://api.dictionaryapi.dev/api/v2/entries/en/${raw.toLowerCase()}`
     ).then(r => r.ok).catch(() => true)
 
     if (!isReal) {
-      setHint({ msg: `"${raw}" isn't a word — try again`, type: 'error' })
+      setHint({ msg: `"${raw}" is not a word — try again`, type: 'error' })
       return
     }
 
-    // Normalize both guess and answer for comparison
     const guessNorm = normalize(raw)
     const answerNorm = normalize(activePuzzle.word)
     const correct = guessNorm === answerNorm || raw.toLowerCase() === activePuzzle.word.toLowerCase()
 
     const updated = wh.submitGuessExact(wh.activeDate, raw, correct)
+    setGuessInput('')
+    setActivePuzzle(updated)
 
-  function handleRevealClue(idx) {
-    const updated = wh.revealClue(wh.activeDate, idx)
-    if (updated) setActivePuzzle(updated)
+    if (updated.solved) {
+      const correctGuess = updated.guesses.find(g => g.correct)
+      if (correctGuess) setHint({ msg: 'You found it!', type: 'success' })
+      else setHint({ msg: `The word was: ${updated.word}. The thread is still yours.`, type: 'info' })
+    } else {
+      setHint({ msg: 'Not quite — try again.', type: 'error' })
+    }
   }
-
   // ── AUDIO ─────────────────────────────────────────────────────
   function toggleAudio(target) {
     if (!window.speechSynthesis) return
