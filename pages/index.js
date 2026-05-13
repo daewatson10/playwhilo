@@ -146,7 +146,16 @@ export default function Home() {
     if (window.speechSynthesis) speechSynthesis.cancel()
     setAudioPlaying(null)
   }
+  
+function stopAudio() {
+    if (window.speechSynthesis) speechSynthesis.cancel()
+    setAudioPlaying(null)
+  }
 
+  function handleRevealClue(idx) {
+    const updated = wh.revealClue(wh.activeDate, idx)
+    if (updated) setActivePuzzle(updated)
+  }
   // ── SHARE ─────────────────────────────────────────────────────
   function handleShare() {
     const text = buildShareText(activePuzzle, wh.activeDate)
