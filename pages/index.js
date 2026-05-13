@@ -76,19 +76,44 @@ export default function Home() {
   }
 
   // ── RIDDLE ────────────────────────────────────────────────────
-  function handleGuess() {
-    if (!guessInput.trim() || !activePuzzle) return
-    const updated = wh.submitGuess(wh.activeDate, guessInput.trim())
-    setGuessInput('')
-    setActivePuzzle(updated)
-    if (updated.solved) {
-      const correct = updated.guesses.find(g => g.correct)
-      if (correct) setHint({ msg: 'You found it!', type: 'success' })
-      else setHint({ msg: `The word was: ${updated.word}. The thread is still yours.`, type: 'info' })
-    } else {
-      setHint({ msg: 'Not quite — try again.', type: 'error' })
+  function normalize(word) {
+    const w = word.toLowerCase().trim()
+    const irregulars = {
+      'children':'child','men':'man','women':'woman','feet':'foot',
+      'teeth':'tooth','mice':'mouse','geese':'goose','leaves':'leaf',
+      'wolves':'wolf','lives':'life','knives':'knife','halves':'half'
     }
+    if (irregulars[w]) return irregulars[w]
+    if (w.endsWith('ies') && w.length > 4) return w.slice(0,-3)+'y'
+    if (w.endsWith('ves') && w.length > 4) return w.slice(0,-3)+'f'
+    if (w.endsWith('es') && w.length > 3) return w.slice(0,-2)
+    if (w.endsWith('ing') && w.length > 5) return w.slice(0,-3)
+    if (w.endsWith('ed') && w.length > 4) return w.slice(0,-2)
+    if (w.endsWith('er') && w.length > 4) return w.slice(0,-2)
+    if (w.endsWith('s') && w.length > 3) return w.slice(0,-1)
+    return w
   }
+
+  async function handleGuess() {
+    if (!guessInput.trim() || !activePuzzle) return
+    const raw = guessInput.trim()
+
+    // Check if real word
+    const isReal = await fetch(
+      `https://api.dictionaryapi.dev/api/v2/entries/en/${raw.toLowerCase()}`
+    ).then(r => r.ok).catch(() => true)
+
+    if (!isReal) {
+      setHint({ msg: `"${raw}" isn't a word — try again`, type: 'error' })
+      return
+    }
+
+    // Normalize both guess and answer for comparison
+    const guessNorm = normalize(raw)
+    const answerNorm = normalize(activePuzzle.word)
+    const correct = guessNorm === answerNorm || raw.toLowerCase() === activePuzzle.word.toLowerCase()
+
+    const updated = wh.submitGuessExact(wh.activeDate, raw, correct)
 
   function handleRevealClue(idx) {
     const updated = wh.revealClue(wh.activeDate, idx)
