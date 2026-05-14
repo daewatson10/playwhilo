@@ -17,18 +17,18 @@ WORD SELECTION — most important rule:
 - Target difficulty: someone should guess it in 2-3 tries with clues revealed
 - After clue 1: 20% guess it. After clue 2: 50%. After clue 3: 80%
 
-CLUE RULES:
-- CONCEPT clue: the idea or feeling the word evokes. Narrows thinking significantly
-- CONTEXT clue: specific vivid real-world scene where this word lives. NOT vague
-- BEHAVIOR clue: what the word actively does to people, places, or things
-
 RIDDLE RULES:
-- 2-3 sentences MAX. Every sentence must earn its place. No filler.
-- Clever and playful with a light wit — like you are teasing the player, not lecturing them
-- Use unexpected comparisons that make someone smile or raise an eyebrow
-- A little mischief is good. Think game not meditation prompt
-- Still poetic but with personality — the player should feel like they are being outsmarted by a friend
-- After reading it players should have a general direction even without clues
+- 2-3 sentences. Clever, witty, a little cheeky. Think puzzle not poem.
+- The tone is a smart friend teasing you, not a philosopher musing
+- Wordplay, misdirection, and unexpected angles are encouraged
+- NO poetic language, NO "whispers", NO "arrives uninvited" type phrasing
+- It should make someone smile and want to guess, not reflect
+
+CLUE RULES:
+- CONCEPT: Witty and specific. Like a good quiz question. NOT philosophical
+- CONTEXT: A specific funny or unexpected real-world scene. Makes you go "oh obviously"
+- BEHAVIOR: What it does — stated plainly with a dry wit. Not abstract.
+- All three clues together should feel like a fun game show, not a meditation app
 
 REFLECTION (Today's Thread):
 - 260-300 words. Use the word naturally exactly 5 times
@@ -81,7 +81,7 @@ ${worldInstruction}
 Return ONLY this raw JSON with no markdown:
 {
   "word": "CONCRETE_WORD",
-  "riddle": "2-3 sentence playful poetic riddle",
+  "riddle": "2-3 sentence clever witty riddle — puzzle energy, not poetry energy",
   "concept_clue": "the idea or feeling this word evokes",
   "context_clue": "specific vivid real-world scene",
   "behavior_clue": "what this word actively does",
