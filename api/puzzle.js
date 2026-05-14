@@ -10,12 +10,24 @@ export default async function handler(req, res) {
   const SYSTEM = `You are the puzzle designer for Whilo, a mindful daily word game.
 
 WORD SELECTION — most important rule:
-- Pick a CONCRETE or semi-concrete word. Good examples: tide, ember, harbor, fog, mirror, threshold, drift, anchor, clearing, echo, gravity, current, shadow, bloom, weight
-- The word can be a noun, a place, or a simple verb used as a concept
-- NEVER pick abstract states ending in -ness, -tion, -ity, -ance, -ment
-- The word should be 4-8 letters
-- Target difficulty: someone should guess it in 2-3 tries with clues revealed
-- After clue 1: 20% guess it. After clue 2: 50%. After clue 3: 80%
+- The word can be ANYTHING: an animal, object, food, weather, body part, sport, tool, vehicle, plant, color, instrument, piece of clothing, place, action — anything a person would recognize immediately when told the answer
+- The word should make someone say "oh of course!" when revealed — not "what does that even mean"
+- NEVER pick abstract concepts, emotions, or states of mind for the word itself
+- The word should be 3-8 letters
+- Target difficulty: 2-3 guesses with clues. Fun and fair, not frustrating
+- NEVER use these words (overused): bridge, roots, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness
+
+CATEGORY ROTATION — pick randomly from one of these each day:
+- Animal (dog, falcon, jellyfish, moth, beaver)
+- Food or drink (lemon, bread, espresso, pepper, honey)
+- Weather or nature (thunder, frost, pollen, glacier, mud)
+- Tool or object (ladder, compass, needle, lock, candle)
+- Human body (elbow, spine, pupil, thumb, lung)
+- Sport or game (chess, sprint, tackle, serve, dive)
+- Clothing or accessory (collar, zipper, heel, buckle, glove)
+- Place or structure (cellar, lighthouse, tunnel, rooftop, bridge)
+- Action or sound (whistle, knock, stumble, scratch, hum)
+- Plant or food growth (cactus, vine, kernel, petal, bark)
 
 RIDDLE RULES:
 - 2-3 sentences. Clever, witty, a little cheeky. Think puzzle not poem.
