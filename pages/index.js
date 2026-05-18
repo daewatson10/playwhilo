@@ -94,7 +94,7 @@ export default function Home() {
     return w
   }
 
-  async function handleGuess() {
+ async function handleGuess() {
     if (!guessInput.trim() || !activePuzzle) return
     const raw = guessInput.trim()
 
@@ -111,12 +111,8 @@ export default function Home() {
     const answerNorm = normalize(activePuzzle.word)
     const correct = guessNorm === answerNorm || raw.toLowerCase() === activePuzzle.word.toLowerCase()
 
-    // Check if guess is a synonym
     const synonyms = (activePuzzle.synonyms || []).map(s => s.toLowerCase())
-    const isSynonym = !correct && (
-      synonyms.includes(raw.toLowerCase()) ||
-      synonyms.includes(guessNorm)
-    )
+    const isSynonym = !correct && (synonyms.includes(raw.toLowerCase()) || synonyms.includes(guessNorm))
 
     if (isSynonym) {
       setGuessInput('')
@@ -135,6 +131,7 @@ export default function Home() {
     } else {
       setHint({ msg: 'Not quite — try again.', type: 'error' })
     }
+  }
   // ── AUDIO ─────────────────────────────────────────────────────
   function toggleAudio(target) {
     if (!window.speechSynthesis) return
