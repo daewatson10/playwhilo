@@ -16,6 +16,9 @@ WORD SELECTION — most important rule:
 - The word should be 3-8 letters
 - Target difficulty: 2-3 guesses with clues. Fun and fair, not frustrating
 - NEVER use these words (overused): bridge, roots, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness
+- Pick words that have NO common synonym of similar length. 
+  DIRT not SOIL (soil is too close). FALCON not HAWK (too interchangeable).
+  If two common words could fit all three clues equally, pick a different word entirely.
 
 CATEGORY ROTATION — pick randomly from one of these each day:
 - Animal (dog, falcon, jellyfish, moth, beaver)
