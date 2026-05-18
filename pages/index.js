@@ -184,7 +184,15 @@ export default function Home() {
   async function openArchive() {
     const past = wh.getArchiveDays()
     const future = await wh.getFutureDays(7)
-    setArchiveDays(past)
+    if (user) {
+      for (const date of past.slice(0, 30)) {
+        const local = wh.load(date)
+        if (!local?.word) {
+          await wh.loadUserDay(user.uid, date)
+        }
+      }
+    }
+    setArchiveDays([...past])
     setFutureDays(future)
     goTo('archive')
   }
