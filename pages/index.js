@@ -77,14 +77,25 @@ export default function Home() {
 
   function normalize(word) {
     const w = word.toLowerCase().trim()
-    const irregulars = { 'children':'child','men':'man','women':'woman','feet':'foot','teeth':'tooth','mice':'mouse','geese':'goose','leaves':'leaf','wolves':'wolf','lives':'life','knives':'knife','halves':'half' }
+    const irregulars = {
+      'children':'child','men':'man','women':'woman','feet':'foot',
+      'teeth':'tooth','mice':'mouse','geese':'goose','leaves':'leaf',
+      'wolves':'wolf','lives':'life','knives':'knife','halves':'half',
+      'cacti':'cactus','fungi':'fungus','alumni':'alumnus'
+    }
     if (irregulars[w]) return irregulars[w]
+    // Order matters — check longer suffixes first
     if (w.endsWith('ies') && w.length > 4) return w.slice(0,-3)+'y'
     if (w.endsWith('ves') && w.length > 4) return w.slice(0,-3)+'f'
-    if (w.endsWith('es') && w.length > 3) return w.slice(0,-2)
+    if (w.endsWith('ches') && w.length > 5) return w.slice(0,-2)
+    if (w.endsWith('shes') && w.length > 5) return w.slice(0,-2)
+    if (w.endsWith('xes') && w.length > 4) return w.slice(0,-2)
+    if (w.endsWith('ses') && w.length > 4) return w.slice(0,-2)
+    if (w.endsWith('zes') && w.length > 4) return w.slice(0,-2)
     if (w.endsWith('ing') && w.length > 5) return w.slice(0,-3)
+    if (w.endsWith('ied') && w.length > 4) return w.slice(0,-3)+'y'
     if (w.endsWith('ed') && w.length > 4) return w.slice(0,-2)
-    if (w.endsWith('er') && w.length > 4) return w.slice(0,-2)
+    if (w.endsWith('es') && w.length > 3) return w.slice(0,-1)
     if (w.endsWith('s') && w.length > 3) return w.slice(0,-1)
     return w
   }
