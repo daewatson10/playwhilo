@@ -111,6 +111,19 @@ export default function Home() {
     const answerNorm = normalize(activePuzzle.word)
     const correct = guessNorm === answerNorm || raw.toLowerCase() === activePuzzle.word.toLowerCase()
 
+    // Check if guess is a synonym
+    const synonyms = (activePuzzle.synonyms || []).map(s => s.toLowerCase())
+    const isSynonym = !correct && (
+      synonyms.includes(raw.toLowerCase()) ||
+      synonyms.includes(guessNorm)
+    )
+
+    if (isSynonym) {
+      setGuessInput('')
+      setHint({ msg: "Almost — you're thinking of the right thing. One more try.", type: 'info' })
+      return
+    }
+
     const updated = wh.submitGuessExact(wh.activeDate, raw, correct)
     setGuessInput('')
     setActivePuzzle(updated)
@@ -122,7 +135,6 @@ export default function Home() {
     } else {
       setHint({ msg: 'Not quite — try again.', type: 'error' })
     }
-  }
   // ── AUDIO ─────────────────────────────────────────────────────
   function toggleAudio(target) {
     if (!window.speechSynthesis) return
