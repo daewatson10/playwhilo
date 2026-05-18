@@ -1,19 +1,18 @@
 // pages/index.js
 import { useState, useEffect, useRef } from 'react'
 import Head from 'next/head'
-import { useWhilo } from '../lib/useWhilo'
+import { useWhilo, getTodayET } from '../lib/useWhilo'
+import { useAuth } from '../lib/useAuth'
 
-const TODAY = new Date().toISOString().split('T')[0]
+const TODAY = getTodayET()
 
-// ── ONBOARDING SLIDES ────────────────────────────────────────────
 const OB_SLIDES = [
   { icon: '✦', title: 'Welcome to Whilo', body: 'Each day, one word. A riddle to crack, a reflection to sit with, a gentle challenge to carry into your day.' },
   { icon: '◈', title: 'Solve the riddle', body: 'Six guesses. Three clues if you need them — Concept, Context, Behavior. Each one precise, never vague.' },
-  { icon: '◉', title: "Today's Thread", body: 'Once you find the word, a short reflection unlocks. Honest, grounded, occasionally tied to something happening in the world.' },
+  { icon: '◉', title: "Today's Thread", body: 'Once you find the word, a short reflection unlocks. Honest, grounded, occasionally tied to something in the world.' },
   { icon: '◎', title: 'Challenge, journal & share', body: 'A real-world nudge. Your private journal — saved forever. Share your result. Missed a day? Play it any time.' }
 ]
 
-// ── SHARE HELPERS ────────────────────────────────────────────────
 function buildShareText(puzzle, date) {
   const guesses = puzzle.guesses || []
   const wrong = guesses.filter(g => !g.correct).length
@@ -28,9 +27,9 @@ function buildShareText(puzzle, date) {
   return `Whilo — ${dateStr}\n${dots}\n${solvedOn ? `Found in ${solvedOn} guess${solvedOn > 1 ? 'es' : ''}` : 'Revealed after 6 tries'}${cluesN > 0 ? ` · ${cluesN} hint${cluesN > 1 ? 's' : ''} used` : ''}\nplaywhilo.com`
 }
 
-// ── MAIN APP ─────────────────────────────────────────────────────
 export default function Home() {
-  const wh = useWhilo()
+  const { user, authLoading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout } = useAuth()
+  const wh = useWhilo(user)
   const [screen, setScreen] = useState('landing')
   const [obStep, setObStep] = useState(0)
   const [activePuzzle, setActivePuzzle] = useState(null)
@@ -39,20 +38,21 @@ export default function Home() {
   const [shareToast, setShareToast] = useState(false)
   const [archiveFilter, setArchiveFilter] = useState('all')
   const [archiveDays, setArchiveDays] = useState([])
-  const [profileStats, setProfileStats] = useState({})
-  const [audioPlaying, setAudioPlaying] = useState(null) // 'riddle' | 'thread' | null
+  const [futureDays, setFutureDays] = useState([])
+  const [profileData, setProfileData] = useState({})
+  const [wordHistory, setWordHistory] = useState([])
+  const [audioPlaying, setAudioPlaying] = useState(null)
+  const [authMode, setAuthMode] = useState('login')
+  const [authEmail, setAuthEmail] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
+  const [authError, setAuthError] = useState('')
   const ttsRef = useRef(null)
 
   useEffect(() => {
     if (!wh.onboardDone) setScreen('onboard')
   }, [wh.onboardDone])
 
-  // ── NAVIGATION ────────────────────────────────────────────────
-  function goTo(s) {
-    stopAudio()
-    setScreen(s)
-    window.scrollTo(0, 0)
-  }
+  function goTo(s) { stopAudio(); setScreen(s); window.scrollTo(0, 0) }
 
   function goToDaily() {
     const s = wh.load(TODAY)
@@ -75,14 +75,9 @@ export default function Home() {
     }
   }
 
-  // ── RIDDLE ────────────────────────────────────────────────────
   function normalize(word) {
     const w = word.toLowerCase().trim()
-    const irregulars = {
-      'children':'child','men':'man','women':'woman','feet':'foot',
-      'teeth':'tooth','mice':'mouse','geese':'goose','leaves':'leaf',
-      'wolves':'wolf','lives':'life','knives':'knife','halves':'half'
-    }
+    const irregulars = { 'children':'child','men':'man','women':'woman','feet':'foot','teeth':'tooth','mice':'mouse','geese':'goose','leaves':'leaf','wolves':'wolf','lives':'life','knives':'knife','halves':'half' }
     if (irregulars[w]) return irregulars[w]
     if (w.endsWith('ies') && w.length > 4) return w.slice(0,-3)+'y'
     if (w.endsWith('ves') && w.length > 4) return w.slice(0,-3)+'f'
@@ -94,7 +89,7 @@ export default function Home() {
     return w
   }
 
- async function handleGuess() {
+  async function handleGuess() {
     if (!guessInput.trim() || !activePuzzle) return
     const raw = guessInput.trim()
 
@@ -132,7 +127,13 @@ export default function Home() {
       setHint({ msg: 'Not quite — try again.', type: 'error' })
     }
   }
-  // ── AUDIO ─────────────────────────────────────────────────────
+
+  function handleRevealClue(idx) {
+    const isSolved = activePuzzle?.solved
+    const updated = wh.revealClue(wh.activeDate, idx, isSolved)
+    if (updated) setActivePuzzle(updated)
+  }
+
   function toggleAudio(target) {
     if (!window.speechSynthesis) return
     if (audioPlaying === target) { stopAudio(); return }
@@ -155,22 +156,11 @@ export default function Home() {
     if (window.speechSynthesis) speechSynthesis.cancel()
     setAudioPlaying(null)
   }
-  
-function stopAudio() {
-    if (window.speechSynthesis) speechSynthesis.cancel()
-    setAudioPlaying(null)
-  }
 
-  function handleRevealClue(idx) {
-    const updated = wh.revealClue(wh.activeDate, idx)
-    if (updated) setActivePuzzle(updated)
-  }
-  // ── SHARE ─────────────────────────────────────────────────────
   function handleShare() {
     const text = buildShareText(activePuzzle, wh.activeDate)
-    if (navigator.share) {
-      navigator.share({ title: 'Whilo', text }).catch(() => copyText(text))
-    } else { copyText(text) }
+    if (navigator.share) navigator.share({ title: 'Whilo', text }).catch(() => copyText(text))
+    else copyText(text)
   }
 
   function copyText(text) {
@@ -180,14 +170,18 @@ function stopAudio() {
     })
   }
 
-  // ── ARCHIVE ───────────────────────────────────────────────────
-  function openArchive() {
-    setArchiveDays(wh.getArchiveDays())
+  async function openArchive() {
+    const past = wh.getArchiveDays()
+    const future = await wh.getFutureDays(7)
+    setArchiveDays(past)
+    setFutureDays(future)
     goTo('archive')
   }
 
-  // ── PROFILE ───────────────────────────────────────────────────
-  function openProfile() {
+  async function openProfile() {
+    const profile = await wh.getUserProfile()
+    const history = await wh.getUserWordHistory()
+    const streak = await wh.calcStreakFirebase()
     let tot = 0, solv = 0, jour = 0
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
@@ -198,11 +192,37 @@ function stopAudio() {
         } catch {}
       }
     }
-    setProfileStats({ tot, solv, jour, streak: wh.calcStreak() })
+    setProfileData({
+      streak: profile?.streak || streak,
+      longestStreak: profile?.longestStreak || streak,
+      totalSolved: profile?.totalSolved || solv,
+      totalPlayed: profile?.totalPlayed || tot,
+      journalCount: profile?.journalCount || jour,
+    })
+    setWordHistory(history)
     goTo('profile')
   }
 
-  // ── HIGHLIGHTED REFLECTION ────────────────────────────────────
+  async function handleAuthSubmit() {
+    setAuthError('')
+    try {
+      if (authMode === 'login') await signInWithEmail(authEmail, authPassword)
+      else await signUpWithEmail(authEmail, authPassword)
+      goTo('landing')
+    } catch (e) {
+      setAuthError(e.message.replace('Firebase: ', '').replace(/\(auth\/.*\)/, '').trim())
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    try {
+      await signInWithGoogle()
+      goTo('landing')
+    } catch (e) {
+      setAuthError('Google sign in failed. Please try again.')
+    }
+  }
+
   function highlightWord(text, word) {
     if (!text || !word) return text
     const parts = text.split(new RegExp(`(\\b${word}\\b)`, 'gi'))
@@ -213,7 +233,6 @@ function stopAudio() {
     )
   }
 
-  // ── SHARE CARD DOTS ───────────────────────────────────────────
   function ShareCardDots({ puzzle }) {
     const guesses = puzzle?.guesses || []
     const wrong = guesses.filter(g => !g.correct).length
@@ -234,16 +253,20 @@ function stopAudio() {
   const isToday = wh.activeDate === TODAY
   const streak = wh.calcStreak()
 
-  // ─────────────────────────────────────────────────────────────
-  // RENDER
-  // ─────────────────────────────────────────────────────────────
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--cream)' }}>
+        <div style={{ width: 32, height: 32, border: '2px solid var(--gold-light)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    )
+  }
+
   return (
     <>
       <Head><title>Whilo — Today's word is waiting</title></Head>
-
       <div style={{ maxWidth: 680, margin: '0 auto', paddingBottom: 80 }}>
 
-        {/* LOADING OVERLAY */}
         {wh.loading && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(250,247,240,0.94)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
             <div style={{ width: 32, height: 32, border: '2px solid var(--gold-light)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 13 }} />
@@ -255,7 +278,7 @@ function stopAudio() {
         {/* HEADER */}
         <div style={{ textAlign: 'center', padding: '28px 24px 18px', borderBottom: '1px solid var(--border)', position: 'relative' }}>
           <div style={{ position: 'absolute', top: 28, right: 20, fontSize: 11, color: 'var(--ink-light)', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}
           </div>
           <div style={{ fontFamily: 'Lora, serif', fontSize: 30, fontWeight: 600, letterSpacing: '-0.5px', color: 'var(--ink)' }}>
             whi<span style={{ color: 'var(--gold)' }}>lo</span>
@@ -263,7 +286,6 @@ function stopAudio() {
           <div style={{ fontSize: 11, color: 'var(--ink-light)', marginTop: 3, letterSpacing: '0.09em', textTransform: 'uppercase', fontWeight: 300 }}>
             one word · one reflection · one day
           </div>
-          {/* Progress dots */}
           <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginTop: 12 }}>
             {['riddle', 'thread', 'challenge', 'journal'].map((k, i) => {
               const s = wh.load(TODAY)
@@ -273,7 +295,7 @@ function stopAudio() {
           </div>
         </div>
 
-        {/* ── ONBOARDING ────────────────────────────────── */}
+        {/* ONBOARDING */}
         {screen === 'onboard' && (
           <div className="fade-up" style={{ textAlign: 'center', padding: '44px 32px' }}>
             <div style={{ display: 'flex', gap: 5, justifyContent: 'center', marginBottom: 32 }}>
@@ -294,10 +316,60 @@ function stopAudio() {
           </div>
         )}
 
-        {/* ── LANDING ───────────────────────────────────── */}
+        {/* AUTH */}
+        {screen === 'auth' && (
+          <div className="fade-up" style={{ padding: '40px 32px', maxWidth: 400, margin: '0 auto' }}>
+            <h1 style={{ fontFamily: 'Lora, serif', fontSize: 22, fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>
+              {authMode === 'login' ? 'Welcome back' : 'Create your account'}
+            </h1>
+            <p style={{ fontSize: 13, color: 'var(--ink-light)', textAlign: 'center', marginBottom: 28 }}>
+              {authMode === 'login' ? 'Sign in to save your progress' : 'Your journal and streaks, saved forever'}
+            </p>
+
+            <button onClick={handleGoogleSignIn}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', padding: '12px 20px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 16, color: 'var(--ink)' }}>
+              <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+              Continue with Google
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              <span style={{ fontSize: 12, color: 'var(--ink-light)' }}>or</span>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            </div>
+
+            <input value={authEmail} onChange={e => setAuthEmail(e.target.value)}
+              placeholder="Email address" type="email"
+              style={{ width: '100%', padding: '11px 15px', border: '1.5px solid var(--border)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, background: 'var(--card)', color: 'var(--ink)', outline: 'none', marginBottom: 10 }} />
+            <input value={authPassword} onChange={e => setAuthPassword(e.target.value)}
+              placeholder="Password" type="password" onKeyDown={e => e.key === 'Enter' && handleAuthSubmit()}
+              style={{ width: '100%', padding: '11px 15px', border: '1.5px solid var(--border)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, background: 'var(--card)', color: 'var(--ink)', outline: 'none', marginBottom: 10 }} />
+
+            {authError && <p style={{ fontSize: 12, color: '#9B3A3A', marginBottom: 10, padding: '8px 12px', background: '#FFF0F0', borderRadius: 8 }}>{authError}</p>}
+
+            <button onClick={handleAuthSubmit}
+              style={{ width: '100%', padding: 13, background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 14 }}>
+              {authMode === 'login' ? 'Sign in' : 'Create account'}
+            </button>
+
+            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--ink-light)' }}>
+              {authMode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+              <button onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+                style={{ color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
+                {authMode === 'login' ? 'Sign up' : 'Sign in'}
+              </button>
+            </p>
+
+            <button onClick={() => goTo('landing')}
+              style={{ display: 'block', textAlign: 'center', width: '100%', marginTop: 16, fontSize: 13, color: 'var(--ink-light)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>
+              Continue without account
+            </button>
+          </div>
+        )}
+
+        {/* LANDING */}
         {screen === 'landing' && (
           <div className="fade-up" style={{ padding: '36px 22px 28px' }}>
-            {/* Week theme banner */}
             <div style={{ background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 14, padding: '13px 16px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 11 }}>
               <div style={{ fontSize: 20 }}>◈</div>
               <div>
@@ -315,7 +387,7 @@ function stopAudio() {
               )}
               <div style={{ fontSize: 40, marginBottom: 16, lineHeight: 1 }}>✦</div>
               <h1 style={{ fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 600, lineHeight: 1.35 }}>Today's word is waiting</h1>
-              <p style={{ fontSize: 14, color: 'var(--ink-light)', marginTop: 9, lineHeight: 1.75, maxWidth: 340, margin: '9px auto 0' }}>A poetic riddle. A moment of real reflection. A gentle challenge for your day.</p>
+              <p style={{ fontSize: 14, color: 'var(--ink-light)', marginTop: 9, lineHeight: 1.75, maxWidth: 340, margin: '9px auto 0' }}>A clever riddle. A moment of real reflection. A gentle challenge for your day.</p>
             </div>
 
             <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
@@ -325,11 +397,16 @@ function stopAudio() {
               <button onClick={openArchive} style={{ padding: '9px 24px', background: 'transparent', color: 'var(--ink-light)', fontFamily: 'Nunito, sans-serif', fontSize: 13, borderRadius: 40, border: '1px solid var(--border)', cursor: 'pointer' }}>
                 Past Puzzles
               </button>
+              {!user && (
+                <button onClick={() => goTo('auth')} style={{ padding: '9px 24px', background: 'transparent', color: 'var(--gold)', fontFamily: 'Nunito, sans-serif', fontSize: 13, borderRadius: 40, border: '1px solid var(--gold-light)', cursor: 'pointer' }}>
+                  Sign in to save progress
+                </button>
+              )}
             </div>
           </div>
         )}
 
-        {/* ── RIDDLE ────────────────────────────────────── */}
+        {/* RIDDLE */}
         {screen === 'riddle' && p && (
           <div className="fade-up" style={{ padding: '26px 22px' }}>
             {!isToday && (
@@ -344,20 +421,16 @@ function stopAudio() {
               </div>
             )}
             {p.world_note && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', background: 'var(--blue-bg)', color: 'var(--blue)', borderRadius: 10, fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>↗ Connected to the world</div>}
-
             <SectionLabel>Today's riddle</SectionLabel>
-
-            {/* Riddle card */}
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: '28px 26px 20px', marginBottom: 20, position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: -14, left: 14, fontFamily: 'Lora, serif', fontSize: 90, color: 'var(--gold-light)', lineHeight: 1, pointerEvents: 'none' }}>"</div>
               <p style={{ fontFamily: 'Lora, serif', fontSize: 16, lineHeight: 1.85, color: 'var(--ink)', fontStyle: 'italic', position: 'relative', zIndex: 1 }}>{p.riddle}</p>
-
-              {/* Audio bar */}
               <AudioBar target="riddle" playing={audioPlaying === 'riddle'} onToggle={() => toggleAudio('riddle')} label="Hear the riddle read aloud" />
             </div>
 
-            {/* Clues */}
-            <SectionLabel style={{ marginBottom: 8 }}>Need a hint?</SectionLabel>
+            <SectionLabel style={{ marginBottom: 8 }}>
+              {p.solved ? 'Explore the clues' : 'Need a hint?'}
+            </SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 20 }}>
               {[
                 { icon: '◈', type: 'Concept', name: 'Abstract idea', text: p.concept_clue },
@@ -366,8 +439,8 @@ function stopAudio() {
               ].map((clue, i) => {
                 const revealed = (p.cluesUsed || []).includes(i)
                 return (
-                  <div key={i} onClick={() => !revealed && handleRevealClue(i)}
-                    style={{ background: revealed ? 'var(--gold-bg)' : 'var(--card)', border: `1px solid ${revealed ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 12, padding: '12px 8px', textAlign: 'center', cursor: revealed ? 'default' : 'pointer', transition: 'all 0.25s' }}>
+                  <div key={i} onClick={() => handleRevealClue(i)}
+                    style={{ background: revealed ? 'var(--gold-bg)' : 'var(--card)', border: `1px solid ${revealed ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 12, padding: '12px 8px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.25s' }}>
                     {revealed ? (
                       <p style={{ fontSize: 12, color: 'var(--ink-mid)', fontStyle: 'italic', lineHeight: 1.45 }}>{clue.text}</p>
                     ) : (
@@ -382,10 +455,8 @@ function stopAudio() {
               })}
             </div>
 
-            {/* Hint bar */}
             {hint.msg && <div style={{ padding: '10px 14px', borderRadius: 10, fontSize: 13, marginBottom: 12, background: hint.type === 'error' ? '#FFF0F0' : hint.type === 'success' ? '#EDFBF0' : 'var(--gold-bg)', color: hint.type === 'error' ? '#9B3A3A' : hint.type === 'success' ? '#2D7A45' : '#92681E', border: `1px solid ${hint.type === 'error' ? '#F0C5C5' : hint.type === 'success' ? '#B8E8C6' : 'var(--gold-light)'}` }}>{hint.msg}</div>}
 
-            {/* Guesses */}
             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 7 }}>
               {(p.guesses || []).map((g, i) => (
                 <div key={i} style={{ padding: '4px 12px', borderRadius: 18, fontSize: 12, fontWeight: 600, fontFamily: 'Lora, serif', fontStyle: 'italic', border: '1px solid', background: g.correct ? '#EDFBF0' : '#F5E8E8', color: g.correct ? '#2D7A45' : '#9B3A3A', borderColor: g.correct ? '#B8E8C6' : '#E8C5C5' }}>{g.text}</div>
@@ -411,30 +482,23 @@ function stopAudio() {
           </div>
         )}
 
-        {/* ── TODAY'S THREAD ────────────────────────────── */}
+        {/* THREAD */}
         {screen === 'thread' && p && (
           <div className="fade-up" style={{ padding: '26px 22px' }}>
             <div style={{ textAlign: 'center', padding: '32px 26px', background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 20, marginBottom: 22 }}>
               <div className="word-reveal" style={{ fontFamily: 'Lora, serif', fontSize: 44, fontWeight: 600, letterSpacing: '0.05em', marginBottom: 5 }}>{p.word}</div>
               <div style={{ fontSize: 13, color: 'var(--ink-light)', fontStyle: 'italic' }}>{p.solved_subtitle}</div>
             </div>
-
             {p.week_theme && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 12px', background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 20, fontSize: 10, color: 'var(--gold)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>◈ This week: {p.week_theme}</div>}
-
             <SectionLabel>Today's thread</SectionLabel>
-
             <AudioBar target="thread" playing={audioPlaying === 'thread'} onToggle={() => toggleAudio('thread')} label="Hear today's reflection" style={{ marginBottom: 16 }} />
-
             <p style={{ fontFamily: 'Lora, serif', fontSize: 16, lineHeight: 1.95, padding: '4px 0' }}>{highlightWord(p.reflection, p.word)}</p>
-
             {p.world_note && (
               <div style={{ background: 'var(--blue-bg)', borderLeft: '3px solid #93C5FD', borderRadius: '0 6px 6px 0', padding: '12px 14px', margin: '16px 0', fontSize: 13, color: '#1E40AF', lineHeight: 1.6 }}>
                 <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.09em', fontWeight: 700, marginBottom: 4, color: '#3B82F6' }}>↗ In the world</div>
                 {p.world_note}
               </div>
             )}
-
-            {/* SHARE CARD */}
             <div style={{ marginTop: 24, borderTop: '1px solid var(--border)', paddingTop: 20 }}>
               <div style={{ fontSize: 11, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--ink-light)', fontWeight: 600, marginBottom: 14 }}>Share today's word</div>
               <div style={{ background: 'var(--ink)', borderRadius: 16, padding: 24, marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
@@ -449,12 +513,11 @@ function stopAudio() {
                 <div style={{ fontSize: 11, color: 'rgba(250,247,240,0.45)', fontFamily: 'Lora, serif', fontStyle: 'italic' }}>playwhilo.com</div>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button onClick={handleShare} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', background: 'var(--ink)', color: 'var(--cream)', border: '1px solid var(--ink)' }}>Share Result</button>
-                <button onClick={() => copyText(buildShareText(p, wh.activeDate))} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 18px', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', background: 'var(--card)', color: 'var(--ink)', border: '1px solid var(--border)' }}>Copy Text</button>
+                <button onClick={handleShare} style={{ padding: '10px 18px', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', background: 'var(--ink)', color: 'var(--cream)', border: '1px solid var(--ink)' }}>Share Result</button>
+                <button onClick={() => copyText(buildShareText(p, wh.activeDate))} style={{ padding: '10px 18px', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer', background: 'var(--card)', color: 'var(--ink)', border: '1px solid var(--border)' }}>Copy Text</button>
               </div>
               {shareToast && <div style={{ fontSize: 12, color: 'var(--sage)', marginTop: 8, fontStyle: 'italic' }}>✦ Copied to clipboard!</div>}
             </div>
-
             <button onClick={() => { wh.setDone(wh.activeDate, 'challenge'); goTo('challenge') }}
               style={{ display: 'block', width: '100%', padding: 12, marginTop: 16, background: 'transparent', color: 'var(--gold)', border: '1.5px solid var(--gold-light)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}>
               Continue to your challenge →
@@ -462,7 +525,7 @@ function stopAudio() {
           </div>
         )}
 
-        {/* ── CHALLENGE ─────────────────────────────────── */}
+        {/* CHALLENGE */}
         {screen === 'challenge' && p && (
           <div className="fade-up" style={{ padding: '26px 22px' }}>
             <SectionLabel>Today's challenge</SectionLabel>
@@ -470,48 +533,70 @@ function stopAudio() {
               <div style={{ fontSize: 10, color: 'var(--sage)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 8 }}>✦ Your invitation today</div>
               <p style={{ fontFamily: 'Lora, serif', fontSize: 15, lineHeight: 1.75 }}>{p.challenge}</p>
             </div>
-            <button onClick={() => { goTo('journal') }}
+            <button onClick={() => goTo('journal')}
               style={{ display: 'block', width: '100%', padding: 12, marginTop: 16, background: 'transparent', color: 'var(--gold)', border: '1.5px solid var(--gold-light)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}>
               Open your journal →
             </button>
           </div>
         )}
 
-        {/* ── JOURNAL ───────────────────────────────────── */}
+        {/* JOURNAL */}
         {screen === 'journal' && p && (
           <div className="fade-up" style={{ padding: '26px 22px' }}>
             <SectionLabel>Your journal</SectionLabel>
             <div style={{ fontFamily: 'Lora, serif', fontSize: 14, lineHeight: 1.75, color: 'var(--ink-light)', fontStyle: 'italic', padding: '13px 16px', background: '#F8F4EC', borderRadius: 10, borderLeft: '3px solid var(--gold)', marginBottom: 13 }}>{p.journal_prompt}</div>
-            <JournalEditor puzzle={p} date={wh.activeDate} onSave={(text) => {
-              const updated = wh.saveJournal(wh.activeDate, text)
+            <JournalEditor puzzle={p} date={wh.activeDate} onSave={async (text) => {
+              const updated = await wh.saveJournal(wh.activeDate, text)
               setActivePuzzle(updated)
             }} />
           </div>
         )}
 
-        {/* ── PROFILE ───────────────────────────────────── */}
+        {/* PROFILE */}
         {screen === 'profile' && (
           <div className="fade-up">
             <div style={{ textAlign: 'center', padding: '28px 22px 16px' }}>
-              <div style={{ width: 66, height: 66, borderRadius: '50%', background: 'var(--gold-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontFamily: 'Lora, serif', fontSize: 26, color: 'var(--gold)', fontWeight: 600 }}>W</div>
-              <div style={{ fontFamily: 'Lora, serif', fontSize: 19, fontWeight: 600 }}>Your Journey</div>
-              <div style={{ fontSize: 12, color: 'var(--ink-light)', marginTop: 2 }}>{profileStats.tot > 0 ? `${profileStats.tot} day${profileStats.tot !== 1 ? 's' : ''} on your Whilo journey` : 'Your journey starts today'}</div>
+              <div style={{ width: 66, height: 66, borderRadius: '50%', background: 'var(--gold-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontFamily: 'Lora, serif', fontSize: 26, color: 'var(--gold)', fontWeight: 600 }}>
+                {user ? (user.displayName || user.email || 'W').charAt(0).toUpperCase() : 'W'}
+              </div>
+              <div style={{ fontFamily: 'Lora, serif', fontSize: 19, fontWeight: 600 }}>
+                {user ? (user.displayName || user.email?.split('@')[0] || 'Your Journey') : 'Your Journey'}
+              </div>
+              {user && <div style={{ fontSize: 12, color: 'var(--ink-light)', marginTop: 2 }}>{user.email}</div>}
+              {!user && (
+                <button onClick={() => goTo('auth')} style={{ marginTop: 10, padding: '7px 20px', background: 'var(--gold-bg)', color: 'var(--gold)', border: '1px solid var(--gold-light)', borderRadius: 20, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                  Sign in to save progress
+                </button>
+              )}
             </div>
 
-            <div style={{ margin: '0 22px 18px', background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 14, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 13 }}>
-              <div style={{ fontSize: 34 }}>🔥</div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--ink-light)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>Current streak</div>
-                <div style={{ fontFamily: 'Lora, serif', fontSize: 30, fontWeight: 600, color: 'var(--gold)', lineHeight: 1 }}>{profileStats.streak || 0}</div>
-                <div style={{ fontSize: 12, color: 'var(--ink-light)', marginTop: 2, fontStyle: 'italic' }}>
-                  {!profileStats.streak ? 'Complete today to start your streak' : profileStats.streak === 1 ? 'One day in — come back tomorrow' : `${profileStats.streak} days in a row`}
+            {/* Streaks */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 22px 16px' }}>
+              <div style={{ background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ fontSize: 28 }}>🔥</div>
+                <div>
+                  <div style={{ fontSize: 10, color: 'var(--ink-light)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>Current streak</div>
+                  <div style={{ fontFamily: 'Lora, serif', fontSize: 26, fontWeight: 600, color: 'var(--gold)', lineHeight: 1 }}>{profileData.streak || 0}</div>
+                </div>
+              </div>
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ fontSize: 28 }}>⭐</div>
+                <div>
+                  <div style={{ fontSize: 10, color: 'var(--ink-light)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>Best streak</div>
+                  <div style={{ fontFamily: 'Lora, serif', fontSize: 26, fontWeight: 600, color: 'var(--ink)', lineHeight: 1 }}>{profileData.longestStreak || 0}</div>
                 </div>
               </div>
             </div>
 
+            {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9, padding: '0 22px 18px' }}>
-              {[['Days played', profileStats.tot || 0], ['Words found', profileStats.solv || 0], ['Journal entries', profileStats.jour || 0]].map(([label, val]) => (
+              {[
+                ['Words found', profileData.totalSolved || 0, '◈'],
+                ['Days played', profileData.totalPlayed || 0, '◉'],
+                ['Journal entries', profileData.journalCount || 0, '◎'],
+              ].map(([label, val, icon]) => (
                 <div key={label} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 10px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, marginBottom: 4 }}>{icon}</div>
                   <div style={{ fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 600 }}>{val}</div>
                   <div style={{ fontSize: 10, color: 'var(--ink-light)', marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>{label}</div>
                 </div>
@@ -519,15 +604,16 @@ function stopAudio() {
             </div>
 
             {/* Weekly calendar */}
-            <div style={{ padding: '0 22px' }}>
+            <div style={{ padding: '0 22px 20px' }}>
               <SectionLabel>This week</SectionLabel>
               <div style={{ display: 'flex', gap: 5 }}>
                 {['M','T','W','T','F','S','S'].map((d, i) => {
-                  const today = new Date(); const dow = today.getDay()
+                  const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }))
+                  const dow = today.getDay()
                   const d2 = new Date(today); d2.setDate(today.getDate() - ((dow + 6) % 7) + i)
-                  const key = 'whilo_' + d2.toISOString().split('T')[0]
-                  const entry = wh.load(d2.toISOString().split('T')[0])
-                  const isT = d2.toISOString().split('T')[0] === TODAY
+                  const dateStr = d2.toLocaleDateString('en-CA')
+                  const entry = wh.load(dateStr)
+                  const isT = dateStr === TODAY
                   const done = entry?.solved
                   return (
                     <div key={i} style={{ flex: 1, textAlign: 'center' }}>
@@ -540,10 +626,33 @@ function stopAudio() {
                 })}
               </div>
             </div>
+
+            {/* Word history */}
+            {wordHistory.length > 0 && (
+              <div style={{ padding: '0 22px 20px' }}>
+                <SectionLabel>Word history</SectionLabel>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {wordHistory.slice(0, 30).map((d, i) => (
+                    <div key={i} style={{ padding: '4px 12px', background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 20, fontFamily: 'Lora, serif', fontSize: 13, color: 'var(--gold)', fontWeight: 600 }}>
+                      {d.word}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {user && (
+              <div style={{ padding: '0 22px 20px', textAlign: 'center' }}>
+                <button onClick={async () => { await logout(); goTo('landing') }}
+                  style={{ padding: '9px 24px', background: 'transparent', color: 'var(--ink-light)', fontFamily: 'Nunito, sans-serif', fontSize: 13, borderRadius: 40, border: '1px solid var(--border)', cursor: 'pointer' }}>
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         )}
 
-        {/* ── ARCHIVE ───────────────────────────────────── */}
+        {/* ARCHIVE */}
         {screen === 'archive' && (
           <div className="fade-up" style={{ padding: '26px 22px' }}>
             <SectionLabel>Past puzzles</SectionLabel>
@@ -555,12 +664,33 @@ function stopAudio() {
                 </button>
               ))}
             </div>
+
+            {/* Future days teaser */}
+            {archiveFilter === 'all' && futureDays.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 10, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--ink-light)', fontWeight: 600, marginBottom: 10 }}>Coming up</div>
+                {futureDays.slice(0, 3).map((d, i) => (
+                  <div key={i} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: '12px 16px', marginBottom: 7, display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: 0.6 }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: 'var(--ink-light)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>
+                        {new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
+                      </div>
+                      <div style={{ fontSize: 13, color: 'var(--ink-light)', fontStyle: 'italic', marginTop: 2 }}>This week: {d.theme}</div>
+                    </div>
+                    <div style={{ fontSize: 16 }}>🔒</div>
+                  </div>
+                ))}
+                <div style={{ height: 1, background: 'var(--border)', margin: '16px 0' }} />
+              </div>
+            )}
+
             {archiveDays.filter(date => {
               const e = wh.load(date)
               if (archiveFilter === 'done') return e?.solved
               if (archiveFilter === 'missed') return !e?.solved
               return true
             }).length === 0 && <p style={{ color: 'var(--ink-light)', fontStyle: 'italic', fontFamily: 'Lora, serif', textAlign: 'center', padding: '40px 0' }}>Nothing here yet.</p>}
+
             {archiveDays.filter(date => {
               const e = wh.load(date)
               if (archiveFilter === 'done') return e?.solved
@@ -583,7 +713,7 @@ function stopAudio() {
                   <div style={{ flexShrink: 0, marginLeft: 12 }}>
                     {isDone
                       ? <div style={{ padding: '3px 9px', borderRadius: 10, fontSize: 10, fontWeight: 600, background: '#EDFBF0', color: '#2D7A45' }}>✓ Done</div>
-                      : <button onClick={(e) => { e.stopPropagation(); handleStartPuzzle(date) }} style={{ padding: '6px 14px', background: 'var(--ink)', color: 'var(--cream)', borderRadius: 20, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>Play →</button>}
+                      : <button onClick={(ev) => { ev.stopPropagation(); handleStartPuzzle(date) }} style={{ padding: '6px 14px', background: 'var(--ink)', color: 'var(--cream)', borderRadius: 20, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>Play →</button>}
                   </div>
                 </div>
               )
@@ -611,8 +741,6 @@ function stopAudio() {
   )
 }
 
-// ── SMALL COMPONENTS ─────────────────────────────────────────────
-
 function SectionLabel({ children, style }) {
   return (
     <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-light)', fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, ...style }}>
@@ -625,8 +753,7 @@ function SectionLabel({ children, style }) {
 function AudioBar({ target, playing, onToggle, label, style }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#F8F4EC', borderRadius: 10, marginTop: 12, border: '1px solid var(--gold-light)', ...style }}>
-      <button onClick={onToggle}
-        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: playing ? 'var(--gold)' : 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 20, fontFamily: 'Nunito, sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
+      <button onClick={onToggle} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: playing ? 'var(--gold)' : 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 20, fontFamily: 'Nunito, sans-serif', fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
         {playing ? '◼ Stop' : '▶ Listen'}
       </button>
       <span style={{ fontSize: 12, color: 'var(--ink-light)', fontStyle: 'italic', flex: 1 }}>
@@ -645,18 +772,14 @@ function JournalEditor({ puzzle, date, onSave }) {
   const [text, setText] = useState(puzzle?.journal_entry || '')
   const [saved, setSaved] = useState(!!puzzle?.journal_entry)
 
-  function handleSave() {
-    onSave(text)
-    setSaved(true)
-  }
+  function handleSave() { onSave(text); setSaved(true) }
 
   return (
     <>
       <textarea value={text} onChange={e => { setText(e.target.value); setSaved(false) }}
         placeholder="Begin writing here..."
         style={{ width: '100%', minHeight: 145, padding: '13px 15px', border: '1.5px solid var(--border)', borderRadius: 12, fontFamily: 'Lora, serif', fontSize: 15, lineHeight: 1.75, background: 'var(--card)', color: 'var(--ink)', resize: 'vertical', outline: 'none' }} />
-      <button onClick={handleSave}
-        style={{ display: 'block', width: '100%', marginTop: 9, padding: 12, background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+      <button onClick={handleSave} style={{ display: 'block', width: '100%', marginTop: 9, padding: 12, background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
         Save Entry
       </button>
       {saved && <div style={{ textAlign: 'center', padding: 16, fontFamily: 'Lora, serif', fontStyle: 'italic', fontSize: 14, color: 'var(--sage)' }}>✦ Your words are kept.</div>}
