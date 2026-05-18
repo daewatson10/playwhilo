@@ -705,6 +705,7 @@ export default function Home() {
 
             {archiveDays.filter(date => {
               const e = wh.load(date)
+              if (date < '2025-05-01') return false
               if (archiveFilter === 'done') return e?.solved
               if (archiveFilter === 'missed') return !e?.solved
               return true
