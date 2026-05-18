@@ -70,6 +70,7 @@ Return ONLY this raw JSON with no markdown fences:
   "journal_prompt": "An open question...",
   "solved_subtitle": "Short poetic line",
   "week_theme": "${theme}"
+  "synonyms": ["list 2-3 common synonyms of the word that players might guess"]
 }`
         }]
       })
