@@ -335,44 +335,18 @@ export default function Home() {
         {screen === 'auth' && (
           <div className="fade-up" style={{ padding: '40px 32px', maxWidth: 400, margin: '0 auto' }}>
             <h1 style={{ fontFamily: 'Lora, serif', fontSize: 22, fontWeight: 600, marginBottom: 6, textAlign: 'center' }}>
-              {authMode === 'login' && (
-              <div style={{ marginBottom: 14 }}>
-                {!resetSent ? (
-                  <div>
-                    <button onClick={() => setResetSent('asking')}
-                      style={{ fontSize: 12, color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', padding: 0 }}>
-                      Forgot password?
-                    </button>
-                    {resetSent === 'asking' && (
-                      <div style={{ marginTop: 10, padding: '14px', background: '#F8F4EC', borderRadius: 12, border: '1px solid var(--gold-light)' }}>
-                        <p style={{ fontSize: 13, color: 'var(--ink-light)', marginBottom: 10, fontFamily: 'Lora, serif', fontStyle: 'italic' }}>Enter your email to receive a reset link</p>
-                        <input
-                          placeholder="Your email address"
-                          type="email"
-                          id="resetEmailInput"
-                          style={{ width: '100%', padding: '10px 14px', border: '1.5px solid var(--border)', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 14, background: 'var(--card)', color: 'var(--ink)', outline: 'none', marginBottom: 10 }} />
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button onClick={async () => {
-                            const email = document.getElementById('resetEmailInput').value.trim()
-                            if (!email) return
-                            try { await resetPassword(email); setResetSent('sent') }
-                            catch (e) { setAuthError('Could not send reset email. Check your address.') }
-                          }} style={{ flex: 1, padding: '9px', background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                            Send reset link
-                          </button>
-                          <button onClick={() => setResetSent(false)}
-                            style={{ padding: '9px 14px', background: 'transparent', color: 'var(--ink-light)', border: '1px solid var(--border)', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, cursor: 'pointer' }}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : resetSent === 'sent' ? (
-                  <p style={{ fontSize: 12, color: 'var(--sage)', padding: '8px 0' }}>✦ Reset email sent — check your inbox and spam folder</p>
-                ) : null}
-              </div>
-            )}
+              {authMode === 'login' ? 'Welcome back' : 'Create your account'}
+            </h1>
+            <p style={{ fontSize: 13, color: 'var(--ink-light)', textAlign: 'center', marginBottom: 28 }}>
+              {authMode === 'login' ? 'Sign in to save your progress' : 'Your journal and streaks, saved forever'}
+            </p>
+
+            <button onClick={handleGoogleSignIn}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', padding: '12px 20px', background: 'var(--card)', border: '1.5px solid var(--border)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 16, color: 'var(--ink)' }}>
+              <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+              Continue with Google
+            </button>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
               <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
               <span style={{ fontSize: 12, color: 'var(--ink-light)' }}>or</span>
@@ -396,17 +370,40 @@ export default function Home() {
             {authError && <p style={{ fontSize: 12, color: '#9B3A3A', marginBottom: 10, padding: '8px 12px', background: '#FFF0F0', borderRadius: 8 }}>{authError}</p>}
 
             {authMode === 'login' && (
-              <div style={{ textAlign: 'right', marginBottom: 10 }}>
-                {!resetSent ? (
-                  <button onClick={async () => {
-                    if (!authEmail) { setAuthError('Enter your email first'); return }
-                    try { await resetPassword(authEmail); setResetSent(true) }
-                    catch (e) { setAuthError('Could not send reset email. Check your address.') }
-                  }} style={{ fontSize: 12, color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>
-                    Forgot password?
-                  </button>
-                ) : (
-                  <p style={{ fontSize: 12, color: 'var(--sage)' }}>✦ Reset email sent — check your inbox</p>
+              <div style={{ marginBottom: 14 }}>
+                {resetSent !== 'sent' && (
+                  <div>
+                    {resetSent !== 'asking' && (
+                      <button onClick={() => setResetSent('asking')}
+                        style={{ fontSize: 12, color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif', padding: 0 }}>
+                        Forgot password?
+                      </button>
+                    )}
+                    {resetSent === 'asking' && (
+                      <div style={{ padding: '14px', background: '#F8F4EC', borderRadius: 12, border: '1px solid var(--gold-light)' }}>
+                        <p style={{ fontSize: 13, color: 'var(--ink-light)', marginBottom: 10, fontFamily: 'Lora, serif', fontStyle: 'italic' }}>Enter your email to receive a reset link</p>
+                        <input placeholder="Your email address" type="email" id="resetEmailInput"
+                          style={{ width: '100%', padding: '10px 14px', border: '1.5px solid var(--border)', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 14, background: 'var(--card)', color: 'var(--ink)', outline: 'none', marginBottom: 10 }} />
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button onClick={async () => {
+                            const email = document.getElementById('resetEmailInput').value.trim()
+                            if (!email) return
+                            try { await resetPassword(email); setResetSent('sent') }
+                            catch (e) { setAuthError('Could not send reset email. Check your address.') }
+                          }} style={{ flex: 1, padding: '9px', background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                            Send reset link
+                          </button>
+                          <button onClick={() => setResetSent(false)}
+                            style={{ padding: '9px 14px', background: 'transparent', color: 'var(--ink-light)', border: '1px solid var(--border)', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, cursor: 'pointer' }}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {resetSent === 'sent' && (
+                  <p style={{ fontSize: 12, color: 'var(--sage)', padding: '8px 0' }}>✦ Reset email sent — check your inbox and spam folder</p>
                 )}
               </div>
             )}
