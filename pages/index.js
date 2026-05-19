@@ -28,7 +28,7 @@ function buildShareText(puzzle, date) {
 }
 
 export default function Home() {
-  const { user, authLoading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout } = useAuth()
+  const { user, authLoading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout, resetPassword, updateDisplayName } = useAuth()
   const wh = useWhilo(user)
   const [screen, setScreen] = useState('landing')
   const [obStep, setObStep] = useState(0)
@@ -46,6 +46,10 @@ export default function Home() {
   const [authEmail, setAuthEmail] = useState('')
   const [authPassword, setAuthPassword] = useState('')
   const [authError, setAuthError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [resetSent, setResetSent] = useState(false)
   const ttsRef = useRef(null)
 
   useEffect(() => {
@@ -84,7 +88,6 @@ export default function Home() {
       'cacti':'cactus','fungi':'fungus','alumni':'alumnus'
     }
     if (irregulars[w]) return irregulars[w]
-    // Order matters — check longer suffixes first
     if (w.endsWith('ies') && w.length > 4) return w.slice(0,-3)+'y'
     if (w.endsWith('ves') && w.length > 4) return w.slice(0,-3)+'f'
     if (w.endsWith('ches') && w.length > 5) return w.slice(0,-2)
@@ -103,33 +106,26 @@ export default function Home() {
   async function handleGuess() {
     if (!guessInput.trim() || !activePuzzle) return
     const raw = guessInput.trim()
-
     const isReal = await fetch(
       `https://api.dictionaryapi.dev/api/v2/entries/en/${raw.toLowerCase()}`
     ).then(r => r.ok).catch(() => true)
-
     if (!isReal) {
       setHint({ msg: `"${raw}" is not a word — try again`, type: 'error' })
       return
     }
-
     const guessNorm = normalize(raw)
     const answerNorm = normalize(activePuzzle.word)
     const correct = guessNorm === answerNorm || raw.toLowerCase() === activePuzzle.word.toLowerCase()
-
     const synonyms = (activePuzzle.synonyms || []).map(s => s.toLowerCase())
     const isSynonym = !correct && (synonyms.includes(raw.toLowerCase()) || synonyms.includes(guessNorm))
-
     if (isSynonym) {
       setGuessInput('')
       setHint({ msg: "Almost — you're thinking of the right thing. One more try.", type: 'info' })
       return
     }
-
     const updated = wh.submitGuessExact(wh.activeDate, raw, correct)
     setGuessInput('')
     setActivePuzzle(updated)
-
     if (updated.solved) {
       const correctGuess = updated.guesses.find(g => g.correct)
       if (correctGuess) setHint({ msg: 'You found it!', type: 'success' })
@@ -180,7 +176,8 @@ export default function Home() {
       setTimeout(() => setShareToast(false), 2500)
     })
   }
-async function openArchive() {
+
+  async function openArchive() {
     const past = wh.getArchiveDays()
     const future = await wh.getFutureDays(7)
     if (user) {
@@ -359,11 +356,34 @@ async function openArchive() {
             <input value={authEmail} onChange={e => setAuthEmail(e.target.value)}
               placeholder="Email address" type="email"
               style={{ width: '100%', padding: '11px 15px', border: '1.5px solid var(--border)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, background: 'var(--card)', color: 'var(--ink)', outline: 'none', marginBottom: 10 }} />
-            <input value={authPassword} onChange={e => setAuthPassword(e.target.value)}
-              placeholder="Password" type="password" onKeyDown={e => e.key === 'Enter' && handleAuthSubmit()}
-              style={{ width: '100%', padding: '11px 15px', border: '1.5px solid var(--border)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, background: 'var(--card)', color: 'var(--ink)', outline: 'none', marginBottom: 10 }} />
+
+            <div style={{ position: 'relative', marginBottom: 10 }}>
+              <input value={authPassword} onChange={e => setAuthPassword(e.target.value)}
+                placeholder="Password" type={showPassword ? 'text' : 'password'} onKeyDown={e => e.key === 'Enter' && handleAuthSubmit()}
+                style={{ width: '100%', padding: '11px 44px 11px 15px', border: '1.5px solid var(--border)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, background: 'var(--card)', color: 'var(--ink)', outline: 'none' }} />
+              <button onClick={() => setShowPassword(!showPassword)} type="button"
+                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--ink-light)', padding: 0 }}>
+                {showPassword ? '🙈' : '👁'}
+              </button>
+            </div>
 
             {authError && <p style={{ fontSize: 12, color: '#9B3A3A', marginBottom: 10, padding: '8px 12px', background: '#FFF0F0', borderRadius: 8 }}>{authError}</p>}
+
+            {authMode === 'login' && (
+              <div style={{ textAlign: 'right', marginBottom: 10 }}>
+                {!resetSent ? (
+                  <button onClick={async () => {
+                    if (!authEmail) { setAuthError('Enter your email first'); return }
+                    try { await resetPassword(authEmail); setResetSent(true) }
+                    catch (e) { setAuthError('Could not send reset email. Check your address.') }
+                  }} style={{ fontSize: 12, color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>
+                    Forgot password?
+                  </button>
+                ) : (
+                  <p style={{ fontSize: 12, color: 'var(--sage)' }}>✦ Reset email sent — check your inbox</p>
+                )}
+              </div>
+            )}
 
             <button onClick={handleAuthSubmit}
               style={{ width: '100%', padding: 13, background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 14 }}>
@@ -372,7 +392,7 @@ async function openArchive() {
 
             <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--ink-light)' }}>
               {authMode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-              <button onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+              <button onClick={() => { setAuthMode(authMode === 'login' ? 'signup' : 'login'); setResetSent(false) }}
                 style={{ color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>
                 {authMode === 'login' ? 'Sign up' : 'Sign in'}
               </button>
@@ -396,7 +416,6 @@ async function openArchive() {
                 <div style={{ fontSize: 11, color: 'var(--ink-light)', marginTop: 2 }}>{new Date().getDay() === 0 ? 'Theme revealed today' : 'Revealed in full on Sunday'}</div>
               </div>
             </div>
-
             <div style={{ textAlign: 'center', padding: '16px 0 28px' }}>
               {streak > 0 && (
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginBottom: 16, background: 'var(--card)', border: '1px solid var(--gold-light)', borderRadius: 20, padding: '5px 14px', fontSize: 13, fontWeight: 600, color: 'var(--gold)' }}>
@@ -407,7 +426,6 @@ async function openArchive() {
               <h1 style={{ fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 600, lineHeight: 1.35 }}>Today's word is waiting</h1>
               <p style={{ fontSize: 14, color: 'var(--ink-light)', marginTop: 9, lineHeight: 1.75, maxWidth: 340, margin: '9px auto 0' }}>A clever riddle. A moment of real reflection. A gentle challenge for your day.</p>
             </div>
-
             <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
               <button onClick={() => handleStartPuzzle(TODAY)} style={{ padding: '13px 38px', background: 'var(--ink)', color: 'var(--cream)', fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, borderRadius: 40, border: 'none', cursor: 'pointer' }}>
                 Begin Today
@@ -445,7 +463,6 @@ async function openArchive() {
               <p style={{ fontFamily: 'Lora, serif', fontSize: 16, lineHeight: 1.85, color: 'var(--ink)', fontStyle: 'italic', position: 'relative', zIndex: 1 }}>{p.riddle}</p>
               <AudioBar target="riddle" playing={audioPlaying === 'riddle'} onToggle={() => toggleAudio('riddle')} label="Hear the riddle read aloud" />
             </div>
-
             <SectionLabel style={{ marginBottom: 8 }}>
               {p.solved ? 'Explore the clues' : 'Need a hint?'}
             </SectionLabel>
@@ -472,9 +489,7 @@ async function openArchive() {
                 )
               })}
             </div>
-
             {hint.msg && <div style={{ padding: '10px 14px', borderRadius: 10, fontSize: 13, marginBottom: 12, background: hint.type === 'error' ? '#FFF0F0' : hint.type === 'success' ? '#EDFBF0' : 'var(--gold-bg)', color: hint.type === 'error' ? '#9B3A3A' : hint.type === 'success' ? '#2D7A45' : '#92681E', border: `1px solid ${hint.type === 'error' ? '#F0C5C5' : hint.type === 'success' ? '#B8E8C6' : 'var(--gold-light)'}` }}>{hint.msg}</div>}
-
             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 7 }}>
               {(p.guesses || []).map((g, i) => (
                 <div key={i} style={{ padding: '4px 12px', borderRadius: 18, fontSize: 12, fontWeight: 600, fontFamily: 'Lora, serif', fontStyle: 'italic', border: '1px solid', background: g.correct ? '#EDFBF0' : '#F5E8E8', color: g.correct ? '#2D7A45' : '#9B3A3A', borderColor: g.correct ? '#B8E8C6' : '#E8C5C5' }}>{g.text}</div>
@@ -483,7 +498,6 @@ async function openArchive() {
             <div style={{ fontSize: 12, color: 'var(--ink-light)', marginBottom: 9 }}>
               {6 - (p.guesses || []).filter(g => !g.correct).length} guesses remaining
             </div>
-
             {!p.solved ? (
               <div style={{ display: 'flex', gap: 7 }}>
                 <input value={guessInput} onChange={e => setGuessInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleGuess()}
@@ -577,9 +591,27 @@ async function openArchive() {
               <div style={{ width: 66, height: 66, borderRadius: '50%', background: 'var(--gold-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', fontFamily: 'Lora, serif', fontSize: 26, color: 'var(--gold)', fontWeight: 600 }}>
                 {user ? (user.displayName || user.email || 'W').charAt(0).toUpperCase() : 'W'}
               </div>
-              <div style={{ fontFamily: 'Lora, serif', fontSize: 19, fontWeight: 600 }}>
-                {user ? (user.displayName || user.email?.split('@')[0] || 'Your Journey') : 'Your Journey'}
-              </div>
+
+              {editingName ? (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                  <input value={newName} onChange={e => setNewName(e.target.value)}
+                    placeholder="Your name"
+                    style={{ padding: '8px 12px', border: '1.5px solid var(--gold-light)', borderRadius: 10, fontFamily: 'Lora, serif', fontSize: 16, background: 'var(--card)', color: 'var(--ink)', outline: 'none', width: 160 }} />
+                  <button onClick={async () => {
+                    if (newName.trim()) { await updateDisplayName(newName.trim()); setEditingName(false) }
+                  }} style={{ padding: '8px 14px', background: 'var(--ink)', color: 'var(--cream)', border: 'none', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Save</button>
+                  <button onClick={() => setEditingName(false)} style={{ padding: '8px 14px', background: 'transparent', color: 'var(--ink-light)', border: '1px solid var(--border)', borderRadius: 10, fontFamily: 'Nunito, sans-serif', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
+                  <div style={{ fontFamily: 'Lora, serif', fontSize: 19, fontWeight: 600 }}>
+                    {user ? (user.displayName || user.email?.split('@')[0] || 'Your Journey') : 'Your Journey'}
+                  </div>
+                  {user && <button onClick={() => { setNewName(user.displayName || ''); setEditingName(true) }}
+                    style={{ fontSize: 12, color: 'var(--ink-light)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito, sans-serif' }}>✏️</button>}
+                </div>
+              )}
+
               {user && <div style={{ fontSize: 12, color: 'var(--ink-light)', marginTop: 2 }}>{user.email}</div>}
               {!user && (
                 <button onClick={() => goTo('auth')} style={{ marginTop: 10, padding: '7px 20px', background: 'var(--gold-bg)', color: 'var(--gold)', border: '1px solid var(--gold-light)', borderRadius: 20, fontFamily: 'Nunito, sans-serif', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
@@ -588,7 +620,6 @@ async function openArchive() {
               )}
             </div>
 
-            {/* Streaks */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 22px 16px' }}>
               <div style={{ background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ fontSize: 28 }}>🔥</div>
@@ -606,7 +637,6 @@ async function openArchive() {
               </div>
             </div>
 
-            {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9, padding: '0 22px 18px' }}>
               {[
                 ['Words found', profileData.totalSolved || 0, '◈'],
@@ -621,7 +651,6 @@ async function openArchive() {
               ))}
             </div>
 
-            {/* Weekly calendar */}
             <div style={{ padding: '0 22px 20px' }}>
               <SectionLabel>This week</SectionLabel>
               <div style={{ display: 'flex', gap: 5 }}>
@@ -645,7 +674,6 @@ async function openArchive() {
               </div>
             </div>
 
-            {/* Word history */}
             {wordHistory.length > 0 && (
               <div style={{ padding: '0 22px 20px' }}>
                 <SectionLabel>Word history</SectionLabel>
@@ -683,7 +711,6 @@ async function openArchive() {
               ))}
             </div>
 
-            {/* Future days teaser */}
             {archiveFilter === 'all' && futureDays.length > 0 && (
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 10, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--ink-light)', fontWeight: 600, marginBottom: 10 }}>Coming up</div>
@@ -711,8 +738,8 @@ async function openArchive() {
             }).length === 0 && <p style={{ color: 'var(--ink-light)', fontStyle: 'italic', fontFamily: 'Lora, serif', textAlign: 'center', padding: '40px 0' }}>Nothing here yet.</p>}
 
             {archiveDays.filter(date => {
-              const e = wh.load(date)
               if (date < '2026-05-01') return false
+              const e = wh.load(date)
               if (archiveFilter === 'done') return e?.solved
               if (archiveFilter === 'missed') return !e?.solved
               return true
