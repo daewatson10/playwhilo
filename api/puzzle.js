@@ -26,7 +26,7 @@ WORD SELECTION — most important rule:
 - 3-8 letters
 - NO common synonyms of similar length — pick words where only one answer fits
 - Pick words that have NO common synonym of similar length. If two common words could fit all three clues equally, pick a different word entirely.
-- NEVER use these overused words: bridge, roots, root, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness, soil, dirt
+- NEVER use these overused words: pupil, pupils, bridge, roots, root, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness, soil, dirt
 
 CLUE RULES:
 - CONCEPT: Witty and specific. Like a good quiz question. NOT philosophical
@@ -117,8 +117,7 @@ Date: ${dateLabel}
 Week theme: "${theme}"
 ${isSunday ? 'Sunday — word should connect to the week theme.' : ''}
 ${worldInstruction}
-${usedWords.length > 0 ? `NEVER use any of these already-used words: ${usedWords.join(', ')}` : ''}
-
+${usedWords.length > 0 ? `BANNED WORDS — DO NOT USE ANY OF THESE: ${usedWords.join(', ')}. Check your chosen word against this list before responding. If it matches, pick a different word.` : ''}
 Return ONLY raw JSON with no markdown:
 {
   "word": "WORD",
