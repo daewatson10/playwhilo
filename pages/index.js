@@ -138,7 +138,13 @@ export default function Home() {
   function handleRevealClue(idx) {
     const isSolved = activePuzzle?.solved
     const updated = wh.revealClue(wh.activeDate, idx, isSolved)
-    if (updated) setActivePuzzle(updated)
+    if (updated) {
+      if (isSolved) {
+        setActivePuzzle({ ...activePuzzle, cluesUsed: [...(activePuzzle.cluesUsed || []), idx] })
+      } else {
+        setActivePuzzle(updated)
+      }
+    }
   }
 
   function toggleAudio(target) {
