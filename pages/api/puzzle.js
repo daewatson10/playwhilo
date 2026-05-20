@@ -35,17 +35,20 @@ WORD SELECTION:
 - NEVER use these overused words: bridge, roots, root, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness, soil, dirt, pupil
 
 RIDDLE RULES:
-- 2-3 sentences. Clever, witty, a little cheeky. Think puzzle not poem.
-- The tone is a smart friend teasing you, not a philosopher musing
-- Wordplay, misdirection, unexpected angles encouraged
-- NO poetic language, NO whispers, NO arrives uninvited phrasing
-- Makes someone smile and want to guess
+- 2-3 sentences. Clever, witty, misdirecting. The first sentence should point away from the answer.
+- Lead with a misleading angle — make the player think of something else first
+- The answer should feel obvious in hindsight but not during the guess
+- Use wordplay, double meanings, unexpected comparisons
+- NO poetic language. Puzzle energy only.
+- Difficulty target: most players should need 3-5 guesses
 
 CLUE RULES:
-- CONCEPT: Witty and specific. Like a good quiz question. NOT philosophical
-- CONTEXT: Specific funny or unexpected real-world scene. Makes you go oh obviously
-- BEHAVIOR: What it does stated plainly with dry wit. Not abstract.
-- All three clues together should feel like a fun game show not a meditation app
+- Clues should NARROW not REVEAL. Each clue rules out wrong answers without giving it away.
+- CONCEPT: A property that fits the word but also fits many wrong guesses — forces thinking not recognition
+- CONTEXT: A specific scene that hints at the category without naming the thing. Should still leave 3-4 possible answers.
+- BEHAVIOR: What it does — phrased in a way that eliminates wrong guesses but doesn't confirm the right one
+- After all 3 clues a player should be down to 2-3 possible answers, not 1
+- NEVER write a clue that makes the answer obvious on its own
 
 REFLECTION:
 - 260-300 words. Use the word naturally exactly 5 times
@@ -124,7 +127,7 @@ Check your chosen word against this list. If it matches any word above, pick a c
 Return ONLY raw JSON:
 {
   "word": "WORD",
-  "riddle": "2-3 sentence clever witty riddle — puzzle energy not poetry energy",
+  "riddle": "2-3 sentence misdirecting riddle — first sentence should mislead, answer obvious only in hindsight",
   "concept_clue": "witty specific clue like a good quiz question",
   "context_clue": "specific unexpected real-world scene",
   "behavior_clue": "what it does stated with dry wit",
