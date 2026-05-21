@@ -7,8 +7,8 @@ import { useAuth } from '../lib/useAuth'
 const TODAY = getTodayET()
 
 const OB_SLIDES = [
-  { icon: '✦', title: 'Welcome to Whilo', body: 'Each day, one word. A riddle to crack, a reflection to sit with, a gentle challenge to carry into your day.' },
-  { icon: '◈', title: 'Solve the riddle', body: 'Six guesses. Three clues if you need them — Concept, Context, Behavior. Each one precise, never vague.' },
+  { icon: '✦', title: 'Welcome to Whilo', body: 'Each day, one word. A riddle to crack, a reflection to sit with, a challenge to carry into your day, and an opportunity to reflect on it all.' },
+  { icon: '◈', title: 'Solve the riddle', body: 'Six guesses. Three clues (if you need them) — Concept, Context, Behavior. Each one precise, never vague.' },
   { icon: '◉', title: "Today's Thread", body: 'Once you find the word, a short reflection unlocks. Honest, grounded, occasionally tied to something in the world.' },
   { icon: '◎', title: 'Challenge, journal & share', body: 'A real-world nudge. Your private journal — saved forever. Share your result. Missed a day? Play it any time.' }
 ]
