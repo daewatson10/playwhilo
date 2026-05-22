@@ -35,12 +35,14 @@ WORD SELECTION:
 - NEVER use these overused words: bridge, roots, root, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness, soil, dirt, pupil
 
 RIDDLE RULES:
-- 2-3 sentences. Clever, witty, misdirecting. The first sentence should point away from the answer.
-- Lead with a misleading angle — make the player think of something else first
-- The answer should feel obvious in hindsight but not during the guess
-- Use wordplay, double meanings, unexpected comparisons
-- NO poetic language. Puzzle energy only.
-- Difficulty target: most players should need 3-5 guesses
+- 2-3 sentences. Game show energy — witty, punchy, a little cocky.
+- NEVER mention the physical category of the word (if it's a plant, no dirt/growth/garden language)
+- First 1-2 sentences should fit at least 5 wrong answers — lead with what the word does to people or what happens to most versions of it
+- Final sentence is ONE specific grounding detail — funny, unexpected, mundane. Think "check your junk drawer" not "ancient as the earth itself"
+- Tone: smart friend giving you a hard time, not a philosopher
+- NO nature metaphors, NO poetic language, NO "arrives uninvited" type phrasing
+- The answer should feel obvious the second they get it but impossible before
+- Difficulty target: 4-5 guesses average
 
 CLUE RULES:
 - Clues should NARROW not REVEAL. Each clue rules out wrong answers without giving it away.
