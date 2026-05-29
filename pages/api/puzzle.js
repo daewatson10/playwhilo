@@ -151,16 +151,19 @@ Return ONLY raw JSON:
     const puzzle = JSON.parse(text)
 
     // Save to word bank
-    try {
-      const db = await getAdminDb()
-      const ref = db.collection('dailyPuzzles').doc(date)
-      const existing = await ref.get()
-      if (!existing.exists) {
-        await ref.set({ ...puzzle, date, createdAt: new Date() })
-      }
-    } catch (e) {
-      console.error('Could not save to word bank:', e)
-    }
+    // Save to word bank
+try {
+  const db = await getAdminDb()
+  const ref = db.collection('dailyPuzzles').doc(date)
+  const force = req.body.force || false
+  const existing = await ref.get()
+  if (!existing.exists || force) {
+    await ref.set({ ...puzzle, date, approved: false, createdAt: new Date() })
+  }
+} catch (e) {
+  console.error('Could not save to word bank:', e)
+}
+    
 
     return res.status(200).json({ ...puzzle, date, guesses: [], cluesUsed: [] })
 
