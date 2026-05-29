@@ -71,11 +71,16 @@ export default function Admin() {
       try {
         const snap = await getDoc(doc(db, 'weekThemes', getWeekMonday()))
         const theme = snap.exists() ? snap.data().theme_name : 'Reflection'
-        const res = await fetch('/api/puzzle', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date, weekTheme: theme, type: 'puzzle', force: true })
-        })
+        // Collect all words already used this week
+const weekWords = weekDates
+  .filter(d => d !== date && puzzles[d]?.word)
+  .map(d => puzzles[d].word)
+
+const res = await fetch('/api/puzzle', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ date, weekTheme: theme, type: 'puzzle', force: true, extraBanned: weekWords })
+})
         const puzzle = await res.json()
         if (!puzzle.error) {
           await setDoc(doc(db, 'dailyPuzzles', date), { ...puzzle, date, approved: false, createdAt: new Date() })
