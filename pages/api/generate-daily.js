@@ -34,15 +34,20 @@ WORD SELECTION:
 - NO common synonyms of similar length — pick words where only one answer fits
 - NEVER use: bridge, roots, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness
 
-RIDDLE RULES:
-- 2-3 sentences. Game show energy — witty, punchy, a little cocky.
-- NEVER mention the physical category of the word (if it's a plant, no dirt/growth/garden language)
-- First 1-2 sentences should fit at least 5 wrong answers — lead with what the word does to people or what happens to most versions of it
-- Final sentence is ONE specific grounding detail — funny, unexpected, mundane. Think "check your junk drawer" not "ancient as the earth itself"
-- Tone: smart friend giving you a hard time, not a philosopher
-- NO nature metaphors, NO poetic language, NO "arrives uninvited" type phrasing
-- The answer should feel obvious the second they get it but impossible before
-- Difficulty target: 4-5 guesses average
+CLUE RULES:
+- Write exactly 3 hints labeled hint_1, hint_2, hint_3
+- Each hint narrows the answer without giving it away
+- No labels, no categories — just 3 good clues in order of helpfulness
+- Hint 1: Least helpful, most misdirecting
+- Hint 2: More specific, rules out more wrong answers  
+- Hint 3: Most specific — after this they should be down to 1-2 possible answers
+- All 3 together should feel like a fun game show not a meditation app
+- NEVER write a clue that makes the answer obvious on its own
+
+Blueprint example (word: DENT):
+"Something hit me hard enough to leave a mark but not hard enough to finish the job. I'm everywhere — your car, your trash can, your ego. Most people just learn to live with me."
+
+This is the ENERGY and TONE to match — not the exact structure to copy.
 
 CLUE RULES:
 - Clues should NARROW not REVEAL. Each clue rules out wrong answers without giving it away.
