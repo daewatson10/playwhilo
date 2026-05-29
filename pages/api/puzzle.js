@@ -38,21 +38,28 @@ WORD SELECTION:
 - NEVER use these overused words: bridge, roots, root, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness, soil, dirt, pupil
 
 RIDDLE RULES:
-- 2-3 sentences. Game show energy — witty, punchy, a little cocky.
-- NEVER mention the physical category of the word (if it's a plant, no dirt/growth/garden language)
-- First 1-2 sentences should fit at least 5 wrong answers — lead with what the word does to people or what happens to most versions of it
-- Final sentence is ONE specific grounding detail — funny, unexpected, mundane. Think "check your junk drawer" not "ancient as the earth itself"
-- Tone: smart friend giving you a hard time, not a philosopher
-- NO nature metaphors, NO poetic language, NO "arrives uninvited" type phrasing
-- The answer should feel obvious the second they get it but impossible before
+- 3 sentences. Game show energy — punchy, confident, a little funny.
+- The riddle speaks AS the word using "I" or "me"
+- Each riddle should feel different — vary the angle: sometimes lead with cause, sometimes lead with where it shows up, sometimes lead with what people do with it
+- At least one sentence should include something unexpected or abstract alongside real specific things — this creates misdirection
+- End with a short dry human truth that lands like a punchline
+- NEVER describe the word directly or name its category
+- The answer should feel obvious the moment they get it, impossible before
 - Difficulty target: 4-5 guesses average
 
+Blueprint example (word: DENT):
+"Something hit me hard enough to leave a mark but not hard enough to finish the job. I'm everywhere — your car, your trash can, your ego. Most people just learn to live with me."
+
+This is the ENERGY and TONE to match — not the exact structure to copy.
+
 CLUE RULES:
-- Clues should NARROW not REVEAL. Each clue rules out wrong answers without giving it away.
-- CONCEPT: A property that fits the word but also fits many wrong guesses — forces thinking not recognition
-- CONTEXT: A specific scene that hints at the category without naming the thing. Should still leave 3-4 possible answers.
-- BEHAVIOR: What it does — phrased in a way that eliminates wrong guesses but doesn't confirm the right one
-- After all 3 clues a player should be down to 2-3 possible answers, not 1
+- Write exactly 3 hints labeled hint_1, hint_2, hint_3
+- Each hint narrows the answer without giving it away
+- No labels, no categories — just 3 good clues in order of helpfulness
+- Hint 1: Least helpful, most misdirecting
+- Hint 2: More specific, rules out more wrong answers  
+- Hint 3: Most specific — after this they should be down to 1-2 possible answers
+- All 3 together should feel like a fun game show not a meditation app
 - NEVER write a clue that makes the answer obvious on its own
 
 REFLECTION:
