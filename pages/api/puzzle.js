@@ -141,9 +141,9 @@ Return ONLY raw JSON:
 {
   "word": "WORD",
   "riddle": "2-3 sentence misdirecting riddle — first sentence should mislead, answer obvious only in hindsight",
-  "concept_clue": "witty specific clue like a good quiz question",
-  "context_clue": "specific unexpected real-world scene",
-  "behavior_clue": "what it does stated with dry wit",
+  "hint_1": "least helpful most misdirecting clue",
+"hint_2": "more specific narrows it down",
+"hint_3": "most specific down to 1-2 answers",
   "reflection": "260-300 words using word exactly 5 times",
   "world_note": null,
   "challenge": "Today do one specific gentle free action — NEVER suggest buying anything",
