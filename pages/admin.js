@@ -74,7 +74,7 @@ export default function Admin() {
         const res = await fetch('/api/puzzle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date, weekTheme: theme, type: 'puzzle' })
+          body: JSON.stringify({ date, weekTheme: theme, type: 'puzzle', force: true })
         })
         const puzzle = await res.json()
         if (!puzzle.error) {
