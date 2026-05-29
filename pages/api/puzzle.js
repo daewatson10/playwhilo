@@ -1,3 +1,6 @@
+export const config = {
+  maxDuration: 30
+}
 let adminApp = null
 
 async function getAdminDb() {
@@ -77,8 +80,9 @@ export default async function handler(req, res) {
   try {
     if (type === 'weekTheme') {
       const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+  signal: AbortSignal.timeout(25000),
         body: JSON.stringify({
           model: 'claude-haiku-4-5',
           max_tokens: 200,
@@ -114,7 +118,7 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5',
-        max_tokens: 1400,
+        max_tokens: 1000,
         system: CLUE_SYSTEM,
         messages: [{
           role: 'user',
