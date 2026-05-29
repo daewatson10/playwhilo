@@ -51,9 +51,9 @@ This is the ENERGY and TONE to match — not the exact structure to copy.
 
 CLUE RULES:
 - Clues should NARROW not REVEAL. Each clue rules out wrong answers without giving it away.
-- CONCEPT: A property that fits the word but also fits many wrong guesses — forces thinking not recognition
-- CONTEXT: A specific scene that hints at the category without naming the thing. Should still leave 3-4 possible answers.
-- BEHAVIOR: What it does — phrased in a way that eliminates wrong guesses but doesn't confirm the right one
+"hint_1": "least helpful most misdirecting clue",
+"hint_2": "more specific narrows it down",
+"hint_3": "most specific down to 1-2 answers",
 - After all 3 clues a player should be down to 2-3 possible answers, not 1
 - NEVER write a clue that makes the answer obvious on its own
 
@@ -136,9 +136,9 @@ Return ONLY raw JSON:
 {
   "word": "WORD",
   "riddle": "2-3 sentence misdirecting riddle — first sentence should mislead, answer obvious only in hindsight",
-  "concept_clue": "witty specific clue",
-  "context_clue": "specific real-world scene",
-  "behavior_clue": "what it does with dry wit",
+  "hint_1": "least helpful most misdirecting clue",
+"hint_2": "more specific narrows it down",
+"hint_3": "most specific down to 1-2 answers",
   "reflection": "260-300w using word 5x",
   "world_note": null,
   "challenge": "Today do one specific action",
