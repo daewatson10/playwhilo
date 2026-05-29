@@ -85,7 +85,7 @@ export default async function handler(req, res) {
   signal: AbortSignal.timeout(25000),
         body: JSON.stringify({
           model: 'claude-haiku-4-5',
-          max_tokens: 200,
+          max_tokens: 800,
           messages: [{ role: 'user', content: 'Generate a weekly theme for Whilo (a mindful word game). Themes should be universal and human. Return ONLY raw JSON no markdown: {"theme_name":"Patience","theme_description":"A week on the quiet art of waiting"}' }]
         })
       })
