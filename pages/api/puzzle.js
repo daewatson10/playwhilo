@@ -123,7 +123,7 @@ Date: ${dateLabel}
 Week theme: "${theme}"
 ${isSunday ? 'Sunday — word should connect to the week theme.' : ''}
 ${worldInstruction}
-BANNED WORDS — DO NOT USE ANY OF THESE UNDER ANY CIRCUMSTANCES: ${usedWords.length > 0 ? usedWords.join(', ') : 'none yet'}.
+BANNED WORDS — DO NOT USE ANY OF THESE UNDER ANY CIRCUMSTANCES: ${[...usedWords, ...(req.body.extraBanned || [])].filter(Boolean).join(', ') || 'none yet'}. 
 Check your chosen word against this list. If it matches any word above, pick a completely different word.
 
 Return ONLY raw JSON:
