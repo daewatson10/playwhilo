@@ -496,7 +496,7 @@ export default function Home() {
               {p.solved ? 'Explore the clues' : 'Need a hint?'}
             </SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 20 }}>
-              {{[
+              {[
   { icon: '①', type: 'Hint 1', name: 'First hint', text: p.hint_1 || p.concept_clue },
   { icon: '②', type: 'Hint 2', name: 'Second hint', text: p.hint_2 || p.context_clue },
   { icon: '③', type: 'Hint 3', name: 'Third hint', text: p.hint_3 || p.behavior_clue },
