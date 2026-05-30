@@ -346,10 +346,10 @@ const res = await fetch('/api/puzzle', {
 
                     {/* Clues */}
                     {[
-                      { key: 'concept_clue', label: 'Concept Clue' },
-                      { key: 'context_clue', label: 'Context Clue' },
-                      { key: 'behavior_clue', label: 'Behavior Clue' },
-                    ].map(({ key, label }) => (
+  { key: 'hint_1', label: 'Hint 1' },
+  { key: 'hint_2', label: 'Hint 2' },
+  { key: 'hint_3', label: 'Hint 3' },
+].map(({ key, label }) => (
                       <div key={key}>
                         <div className="field-label">{label}</div>
                         {isEditing ? (
