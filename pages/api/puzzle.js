@@ -23,7 +23,7 @@ async function getAdminDb() {
   return getFirestore()
 }
 
-const CLUE_SYSTEM = 'CRITICAL: You are writing for a FUN WORD GAME, not a wellness app. Every riddle must sound like a game show host, not a therapist.'
+const CLUE_SYSTEM = 'CRITICAL: You are writing for a FUN WORD GAME, not a wellness app. Every riddle must sound like a game show host, not a therapist.
 
 ABSOLUTE RULE — WORD BANK: You will be given a list of already-used words. Using ANY word from this list is a critical failure. Check every candidate word against this list before proceeding.
 
@@ -73,7 +73,7 @@ CHALLENGE RULES:
 - Doable in under 5 minutes
 - Connected to the word in a genuine way
 
-Return ONLY raw JSON. No markdown fences.``
+Return ONLY raw JSON. No markdown fences.`
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
