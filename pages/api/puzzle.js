@@ -77,8 +77,6 @@ const CLUE_SYSTEM = [
   'Return ONLY raw JSON. No markdown fences.'
 ].join('\n')
 
-Return ONLY raw JSON. No markdown fences.`
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
