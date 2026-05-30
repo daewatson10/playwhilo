@@ -496,23 +496,23 @@ export default function Home() {
               {p.solved ? 'Explore the clues' : 'Need a hint?'}
             </SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 20 }}>
-              {[
-                { icon: '◈', type: 'Concept', name: 'Abstract idea', text: p.concept_clue },
-                { icon: '◉', type: 'Context', name: 'Real world', text: p.context_clue },
-                { icon: '◎', type: 'Behavior', name: 'What it does', text: p.behavior_clue },
-              ].map((clue, i) => {
+              {{[
+  { icon: '①', type: 'Hint 1', name: 'First hint', text: p.hint_1 || p.concept_clue },
+  { icon: '②', type: 'Hint 2', name: 'Second hint', text: p.hint_2 || p.context_clue },
+  { icon: '③', type: 'Hint 3', name: 'Third hint', text: p.hint_3 || p.behavior_clue },
+].map((clue, i) => {
                 const revealed = (p.cluesUsed || []).includes(i)
+  const locked = i > 0 && !(p.cluesUsed || []).includes(i - 1)
                 return (
-                  <div key={i} onClick={() => handleRevealClue(i)}
-                    style={{ background: revealed ? 'var(--gold-bg)' : 'var(--card)', border: `1px solid ${revealed ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 12, padding: '12px 8px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.25s' }}>
+                  <div key={i} onClick={() => !locked && handleRevealClue(i)}
+                    style={{ background: revealed ? 'var(--gold-bg)' : locked ? '#F5F0E8' : 'var(--card)', border: `1px solid ${revealed ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 12, padding: '12px 8px', textAlign: 'center', cursor: locked ? 'default' : 'pointer', opacity: locked ? 0.5 : 1, transition: 'all 0.25s' }}>
                     {revealed ? (
                       <p style={{ fontSize: 12, color: 'var(--ink-mid)', fontStyle: 'italic', lineHeight: 1.45 }}>{clue.text}</p>
                     ) : (
                       <>
                         <span style={{ fontSize: 17, display: 'block', marginBottom: 4 }}>{clue.icon}</span>
                         <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-light)', fontWeight: 600, marginBottom: 4 }}>{clue.type}</div>
-                        <div style={{ fontSize: 11, fontWeight: 600 }}>{clue.name}</div>
-                      </>
+<div style={{ fontSize: 11, fontWeight: 600 }}>{locked ? '🔒' : clue.name}</div>                      </>
                     )}
                   </div>
                 )
