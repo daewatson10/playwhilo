@@ -996,15 +996,14 @@ if (correctGuess) { setHint({ msg: 'You found it!', type: 'success' }); setShowR
       <div style={{ fontFamily: 'Lora, serif', fontSize: 16, fontWeight: 600, color: '#E8D5A3', marginBottom: 20 }}>
         whi<span style={{ color: '#C4922A' }}>lo</span>
       </div>
-
-      {/* Mystery tiles */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, justifyContent: 'center' }}>
-        {Array.from({ length: (activePuzzle.word || '').length }).map((_, i) => (
-          <div key={i} style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(250,247,240,0.06)', border: '1.5px solid rgba(196,146,42,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '60%', height: 2, background: 'rgba(196,146,42,0.3)', borderRadius: 1 }} />
-          </div>
-        ))}
-      </div>
+{/* Date */}
+<div style={{ fontSize: 12, color: '#6B5E4A', textAlign: 'center', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 20 }}>
+  {new Date(wh.activeDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+</div>
+      {/* Mystery mark */}
+<div style={{ fontSize: 64, fontFamily: 'Lora, serif', fontWeight: 600, color: '#C4922A', textAlign: 'center', marginBottom: 20, opacity: 0.9 }}>
+  ✦
+</div>
 
       {/* Score */}
       {(() => {
