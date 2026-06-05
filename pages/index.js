@@ -6,8 +6,6 @@ import { useAuth } from '../lib/useAuth'
 
 const TODAY = getTodayET()
 
-const [showResultPopup, setShowResultPopup] = useState(false)
-
 const OB_SLIDES = [
   { icon: '✦', title: 'Welcome to Whilo', body: 'Each day, one word. A riddle to crack, a reflection to sit with, a challenge to carry into your day, and an opportunity to reflect on it all.' },
   { icon: '◈', title: 'Solve the riddle', body: 'Six guesses. Three clues (if you need them) — Concept, Context, Behavior. Each one precise, never vague.' },
@@ -53,6 +51,7 @@ export default function Home() {
   const [newName, setNewName] = useState('')
   const [resetSent, setResetSent] = useState(false)
   const ttsRef = useRef(null)
+  const [showResultPopup, setShowResultPopup] = useState(false)
 
   useEffect(() => {
     if (!wh.onboardDone) setScreen('onboard')
