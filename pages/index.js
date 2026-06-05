@@ -437,14 +437,6 @@ export default function Home() {
         {/* LANDING */}
         {screen === 'landing' && (
           <div className="fade-up" style={{ padding: '36px 22px 28px' }}>
-            <div style={{ background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 14, padding: '13px 16px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 11 }}>
-              <div style={{ fontSize: 20 }}>◈</div>
-              <div>
-                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--gold)', fontWeight: 600 }}>This week's theme</div>
-                <div style={{ fontFamily: 'Lora, serif', fontSize: 15, color: 'var(--ink)', fontStyle: 'italic', marginTop: 1 }}>{wh.weekTheme?.theme_name || '—'}</div>
-                <div style={{ fontSize: 11, color: 'var(--ink-light)', marginTop: 2 }}>{new Date().getDay() === 0 ? 'Theme revealed today' : 'Revealed in full on Sunday'}</div>
-              </div>
-            </div>
             <div style={{ textAlign: 'center', padding: '16px 0 28px' }}>
               {streak > 0 && (
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginBottom: 16, background: 'var(--card)', border: '1px solid var(--gold-light)', borderRadius: 20, padding: '5px 14px', fontSize: 13, fontWeight: 600, color: 'var(--gold)' }}>
@@ -550,7 +542,6 @@ export default function Home() {
               <div className="word-reveal" style={{ fontFamily: 'Lora, serif', fontSize: 44, fontWeight: 600, letterSpacing: '0.05em', marginBottom: 5 }}>{p.word}</div>
               <div style={{ fontSize: 13, color: 'var(--ink-light)', fontStyle: 'italic' }}>{p.solved_subtitle}</div>
             </div>
-            {p.week_theme && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 12px', background: 'var(--gold-bg)', border: '1px solid var(--gold-light)', borderRadius: 20, fontSize: 10, color: 'var(--gold)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>◈ This week: {p.week_theme}</div>}
             <SectionLabel>Today's thread</SectionLabel>
             <AudioBar target="thread" playing={audioPlaying === 'thread'} onToggle={() => toggleAudio('thread')} label="Hear today's reflection" style={{ marginBottom: 16 }} />
             <p style={{ fontFamily: 'Lora, serif', fontSize: 16, lineHeight: 1.95, padding: '4px 0' }}>{highlightWord(p.reflection, p.word)}</p>
@@ -749,7 +740,6 @@ export default function Home() {
                       <div style={{ fontSize: 10, color: 'var(--ink-light)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>
                         {new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
                       </div>
-                      <div style={{ fontSize: 13, color: 'var(--ink-light)', fontStyle: 'italic', marginTop: 2 }}>This week: {d.theme}</div>
                     </div>
                     <div style={{ fontSize: 16 }}>🔒</div>
                   </div>
