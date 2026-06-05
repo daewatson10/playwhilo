@@ -171,203 +171,11 @@ if (correctGuess) { setHint({ msg: 'You found it!', type: 'success' }); setShowR
     if (window.speechSynthesis) speechSynthesis.cancel()
     setAudioPlaying(null)
   }
-
-  async function handleShare() {
-    const canvas = document.createElement('canvas')
-    canvas.width = 1080
-    canvas.height = 1920
-    const ctx = canvas.getContext('2d')
-
-    const guesses = p.guesses || []
-    const wrong = guesses.filter(g => !g.correct).length
-    const solvedOn = guesses.findIndex(g => g.correct) + 1
-    const hintsN = (p.cluesUsed || []).filter((_, i) => {
-      const solveIdx = guesses.findIndex(g => g.correct)
-      return solveIdx === -1 || i <= solveIdx
-    }).length
-    const dateStr = new Date(wh.activeDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-    const wordLen = (p.word || '').length
-
-    // Background
-    ctx.fillStyle = '#2C2416'
-    ctx.fillRect(0, 0, 1080, 1920)
-
-    // Subtle texture — faint star
-    ctx.font = 'bold 600px serif'
-    ctx.fillStyle = 'rgba(196,146,42,0.04)'
-    ctx.textAlign = 'center'
-    ctx.fillText('✦', 540, 1200)
-
-    // Logo — top
-    ctx.font = '600 72px serif'
-    ctx.fillStyle = '#E8D5A3'
-    ctx.textAlign = 'center'
-    ctx.fillText('whi', 480, 180)
-    ctx.fillStyle = '#C4922A'
-    ctx.fillText('lo', 600, 180)
-
-    // Fix logo positioning — draw as one piece
-    ctx.font = '600 72px Georgia, serif'
-    ctx.fillStyle = '#2C2416'
-    ctx.fillRect(380, 120, 300, 80) // clear
-    ctx.textAlign = 'left'
-    ctx.fillStyle = '#E8D5A3'
-    ctx.fillText('whi', 400, 185)
-    ctx.fillStyle = '#C4922A'
-    const whiWidth = ctx.measureText('whi').width
-    ctx.fillText('lo', 400 + whiWidth, 185)
-
-    // Date
-    ctx.font = '300 38px Arial, sans-serif'
-    ctx.fillStyle = '#6B5E4A'
-    ctx.textAlign = 'center'
-    ctx.fillText(dateStr, 540, 260)
-
-    // Divider
-    ctx.strokeStyle = 'rgba(196,146,42,0.3)'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(200, 300)
-    ctx.lineTo(880, 300)
-    ctx.stroke()
-
-    // Mystery word — blank tiles
-    const tileSize = Math.min(120, 900 / wordLen - 16)
-    const gap = 14
-    const totalWidth = wordLen * tileSize + (wordLen - 1) * gap
-    const startX = (1080 - totalWidth) / 2
-    const tileY = 700
-
-    for (let i = 0; i < wordLen; i++) {
-      const x = startX + i * (tileSize + gap)
-      ctx.fillStyle = 'rgba(250,247,240,0.07)'
-      roundRect(ctx, x, tileY, tileSize, tileSize, 12)
-      ctx.fill()
-      ctx.strokeStyle = 'rgba(196,146,42,0.4)'
-      ctx.lineWidth = 2
-      roundRect(ctx, x, tileY, tileSize, tileSize, 12)
-      ctx.stroke()
-      // Underscore line inside tile
-      ctx.strokeStyle = 'rgba(196,146,42,0.3)'
-      ctx.lineWidth = 3
-      ctx.beginPath()
-      ctx.moveTo(x + tileSize * 0.2, tileY + tileSize * 0.75)
-      ctx.lineTo(x + tileSize * 0.8, tileY + tileSize * 0.75)
-      ctx.stroke()
-    }
-
-    // Question mark in center
-    ctx.font = `bold ${tileSize * 0.5}px Georgia, serif`
-    ctx.fillStyle = 'rgba(196,146,42,0.25)'
-    ctx.textAlign = 'center'
-    ctx.fillText('?', 540, tileY + tileSize * 0.65)
-
-    // Score line
-    const scoreText = solvedOn > 0
-      ? `Found in ${solvedOn} guess${solvedOn > 1 ? 'es' : ''}`
-      : 'Not found today'
-    ctx.font = 'bold 56px Georgia, serif'
-    ctx.fillStyle = '#FAF7F0'
-    ctx.textAlign = 'center'
-    ctx.fillText(scoreText, 540, tileY + tileSize + 80)
-
-    // Hints line
-    const hintText = hintsN === 0 ? 'No hints used' : `${hintsN} hint${hintsN > 1 ? 's' : ''} used`
-    ctx.font = '300 40px Arial, sans-serif'
-    ctx.fillStyle = '#A8936A'
-    ctx.fillText(hintText, 540, tileY + tileSize + 140)
-
-    // Guess dots
-    const dotR = 22
-    const dotGap = 20
-    const dotsTotal = 6 * dotR * 2 + 5 * dotGap
-    const dotsStartX = (1080 - dotsTotal) / 2
-    const dotsY = tileY + tileSize + 220
-
-    for (let i = 0; i < 6; i++) {
-      const cx = dotsStartX + i * (dotR * 2 + dotGap) + dotR
-      ctx.beginPath()
-      ctx.arc(cx, dotsY, dotR, 0, Math.PI * 2)
-      if (i < wrong) {
-        ctx.fillStyle = 'rgba(250,247,240,0.2)'
-      } else if (i === wrong && solvedOn > 0) {
-        ctx.fillStyle = '#C4922A'
-      } else {
-        ctx.fillStyle = 'rgba(250,247,240,0.06)'
-      }
-      ctx.fill()
-      if (i > wrong || (i === wrong && solvedOn === 0)) {
-        ctx.strokeStyle = 'rgba(250,247,240,0.12)'
-        ctx.lineWidth = 1.5
-        ctx.stroke()
-      }
-    }
-
-    // CTA
-    ctx.font = 'bold 48px Georgia, serif'
-    ctx.fillStyle = '#C4922A'
-    ctx.textAlign = 'center'
-    ctx.fillText('Can you beat me?', 540, 1580)
-
-    ctx.font = '300 38px Arial, sans-serif'
-    ctx.fillStyle = 'rgba(250,247,240,0.35)'
-    ctx.fillText('playwhilo.com', 540, 1650)
-
-    // Divider bottom
-    ctx.strokeStyle = 'rgba(196,146,42,0.2)'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(200, 1700)
-    ctx.lineTo(880, 1700)
-    ctx.stroke()
-
-    ctx.font = '300 32px Arial, sans-serif'
-    ctx.fillStyle = '#6B5E4A'
-    ctx.fillText('one word · one reflection · one day', 540, 1750)
-
-    // Convert to blob and share
-    canvas.toBlob(async (blob) => {
-      const file = new File([blob], 'whilo-result.png', { type: 'image/png' })
-      try {
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: 'Whilo',
-            text: 'Can you beat me? playwhilo.com'
-          })
-        } else {
-          // Fallback — download the image
-          const url = URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = 'whilo-result.png'
-          a.click()
-          URL.revokeObjectURL(url)
-          showShareToast('Image saved — post it to your story!')
-        }
-      } catch (e) {
-        copyText(buildShareText(p, wh.activeDate))
-      }
-    }, 'image/png')
-  }
-
-  function showShareToast(msg) {
-    setShareToast(msg || true)
-    setTimeout(() => setShareToast(false), 3000)
-  }
-
-  function roundRect(ctx, x, y, w, h, r) {
-    ctx.beginPath()
-    ctx.moveTo(x + r, y)
-    ctx.lineTo(x + w - r, y)
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r)
-    ctx.lineTo(x + w, y + h - r)
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
-    ctx.lineTo(x + r, y + h)
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r)
-    ctx.lineTo(x, y + r)
-    ctx.quadraticCurveTo(x, y, x + r, y)
-    ctx.closePath()
+  
+function handleShare() {
+    const text = buildShareText(p, wh.activeDate)
+    if (navigator.share) navigator.share({ title: 'Whilo', text }).catch(() => copyText(text))
+    else copyText(text)
   }
 
   function copyText(text) {
@@ -1041,9 +849,13 @@ if (correctGuess) { setHint({ msg: 'You found it!', type: 'success' }); setShowR
 
       {/* Buttons */}
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={() => setShowResultPopup(false)}
-          style={{ flex: 1, padding: '12px', background: 'rgba(250,247,240,0.06)', color: '#A8936A', border: '1px solid rgba(250,247,240,0.1)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, cursor: 'pointer' }}>
-          Close
+        <button onClick={() => {
+            const text = buildShareText(activePuzzle, wh.activeDate)
+            if (navigator.share) navigator.share({ title: 'Whilo', text }).catch(() => navigator.clipboard.writeText(text))
+            else navigator.clipboard.writeText(text)
+          }}
+          style={{ flex: 1, padding: '12px', background: 'rgba(250,247,240,0.06)', color: '#E8D5A3', border: '1px solid rgba(250,247,240,0.1)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+          Share
         </button>
         <button onClick={() => { setShowResultPopup(false); setActivePuzzle(wh.load(wh.activeDate)); goTo('thread'); if (isToday) wh.setDone(TODAY, 'thread') }}
           style={{ flex: 2, padding: '12px', background: '#C4922A', color: '#FAF7F0', border: 'none', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
