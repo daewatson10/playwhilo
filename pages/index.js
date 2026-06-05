@@ -6,6 +6,8 @@ import { useAuth } from '../lib/useAuth'
 
 const TODAY = getTodayET()
 
+const [showResultPopup, setShowResultPopup] = useState(false)
+
 const OB_SLIDES = [
   { icon: '✦', title: 'Welcome to Whilo', body: 'Each day, one word. A riddle to crack, a reflection to sit with, a challenge to carry into your day, and an opportunity to reflect on it all.' },
   { icon: '◈', title: 'Solve the riddle', body: 'Six guesses. Three clues (if you need them) — Concept, Context, Behavior. Each one precise, never vague.' },
@@ -128,7 +130,8 @@ export default function Home() {
     setActivePuzzle(updated)
     if (updated.solved) {
       const correctGuess = updated.guesses.find(g => g.correct)
-      if (correctGuess) setHint({ msg: 'You found it!', type: 'success' })
+if (correctGuess) { setHint({ msg: 'You found it!', type: 'success' }); setShowResultPopup(true) }
+  
       else setHint({ msg: `The word was: ${updated.word}. The thread is still yours.`, type: 'info' })
     } else {
       setHint({ msg: 'Not quite — try again.', type: 'error' })
@@ -979,7 +982,80 @@ export default function Home() {
         )}
 
       </div>
+{/* RESULT POPUP */}
+{showResultPopup && activePuzzle && (
+  <div style={{ position: 'fixed', inset: 0, background: 'rgba(44,36,22,0.85)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '0 24px' }}>
+    <div style={{ width: '100%', maxWidth: 380, background: '#2C2416', borderRadius: 24, padding: '28px 24px', border: '1px solid rgba(196,146,42,0.3)', position: 'relative', boxShadow: '0 24px 60px rgba(0,0,0,0.5)' }}>
 
+      {/* X button */}
+      <button onClick={() => setShowResultPopup(false)}
+        style={{ position: 'absolute', top: 14, right: 14, width: 32, height: 32, borderRadius: '50%', background: 'rgba(250,247,240,0.08)', border: 'none', color: '#A8936A', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        ✕
+      </button>
+
+      {/* Logo */}
+      <div style={{ fontFamily: 'Lora, serif', fontSize: 16, fontWeight: 600, color: '#E8D5A3', marginBottom: 20 }}>
+        whi<span style={{ color: '#C4922A' }}>lo</span>
+      </div>
+
+      {/* Mystery tiles */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, justifyContent: 'center' }}>
+        {Array.from({ length: (activePuzzle.word || '').length }).map((_, i) => (
+          <div key={i} style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(250,247,240,0.06)', border: '1.5px solid rgba(196,146,42,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '60%', height: 2, background: 'rgba(196,146,42,0.3)', borderRadius: 1 }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Score */}
+      {(() => {
+        const guesses = activePuzzle.guesses || []
+        const wrong = guesses.filter(g => !g.correct).length
+        const solvedOn = guesses.findIndex(g => g.correct) + 1
+        const hintsN = (activePuzzle.cluesUsed || []).length
+        return (
+          <>
+            <div style={{ fontFamily: 'Lora, serif', fontSize: 24, fontWeight: 600, color: '#FAF7F0', textAlign: 'center', marginBottom: 6 }}>
+              Found in {solvedOn} guess{solvedOn > 1 ? 'es' : ''}
+            </div>
+            <div style={{ fontSize: 13, color: '#A8936A', textAlign: 'center', marginBottom: 18 }}>
+              {hintsN === 0 ? 'No hints used' : `${hintsN} hint${hintsN > 1 ? 's' : ''} used`}
+            </div>
+
+            {/* Dots */}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 24 }}>
+              {Array(6).fill(null).map((_, i) => {
+                let bg = 'rgba(250,247,240,0.06)'
+                let border = '1px solid rgba(250,247,240,0.12)'
+                if (i < wrong) { bg = 'rgba(250,247,240,0.2)'; border = 'none' }
+                else if (i === wrong) { bg = '#C4922A'; border = 'none' }
+                return <div key={i} style={{ width: 16, height: 16, borderRadius: '50%', background: bg, border }} />
+              })}
+            </div>
+          </>
+        )
+      })()}
+
+      {/* CTA text */}
+      <div style={{ fontSize: 13, color: '#C4922A', textAlign: 'center', fontFamily: 'Lora, serif', fontStyle: 'italic', marginBottom: 20 }}>
+        Can you beat me? · playwhilo.com
+      </div>
+
+      {/* Buttons */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={() => setShowResultPopup(false)}
+          style={{ flex: 1, padding: '12px', background: 'rgba(250,247,240,0.06)', color: '#A8936A', border: '1px solid rgba(250,247,240,0.1)', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, cursor: 'pointer' }}>
+          Close
+        </button>
+        <button onClick={() => { setShowResultPopup(false); setActivePuzzle(wh.load(wh.activeDate)); goTo('thread'); if (isToday) wh.setDone(TODAY, 'thread') }}
+          style={{ flex: 2, padding: '12px', background: '#C4922A', color: '#FAF7F0', border: 'none', borderRadius: 12, fontFamily: 'Nunito, sans-serif', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+          Read Today's Thread →
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
       {/* BOTTOM NAV */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(250,247,240,0.96)', backdropFilter: 'blur(8px)', borderTop: '1px solid var(--border)', padding: '8px 14px', display: 'flex', justifyContent: 'space-around', maxWidth: 680, margin: '0 auto' }}>
         {[
