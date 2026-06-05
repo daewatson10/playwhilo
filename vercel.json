@@ -4,9 +4,5 @@
       "path": "/api/generate-daily",
       "schedule": "0 5 * * *"
     },
-    {
-      "path": "/api/generate-week",
-      "schedule": "0 20 * * 0"
-    }
   ]
 }
