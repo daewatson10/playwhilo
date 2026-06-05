@@ -185,8 +185,12 @@ Return ONLY raw JSON:
 
         const d = await r.json()
         if (d.error) throw new Error(d.error.message)
-        const puzzle = JSON.parse(d.content[0].text.trim().replace(/```json|```/g, '').trim())
-
+let rawText = d.content[0].text.trim().replace(/```json|```/g, '').trim()
+const jsonStart = rawText.indexOf('{')
+const jsonEnd = rawText.lastIndexOf('}')
+if (jsonStart === -1 || jsonEnd === -1) throw new Error('No JSON found in response')
+rawText = rawText.slice(jsonStart, jsonEnd + 1)
+const puzzle = JSON.parse(rawText)
         await db.collection('dailyPuzzles').doc(date).set({
           ...puzzle,
           date,
