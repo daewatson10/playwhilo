@@ -160,8 +160,13 @@ Return ONLY raw JSON:
 
     const d = await r.json()
     if (d.error) return res.status(500).json({ error: d.error.message })
-    const text = d.content[0].text.trim().replace(/```json|```/g, '').trim()
-    const puzzle = JSON.parse(text)
+    let text = d.content[0].text.trim().replace(/```json|```/g, '').trim()
+// Find the JSON object boundaries
+const jsonStart = text.indexOf('{')
+const jsonEnd = text.lastIndexOf('}')
+if (jsonStart === -1 || jsonEnd === -1) throw new Error('No JSON found in response')
+text = text.slice(jsonStart, jsonEnd + 1)
+const puzzle = JSON.parse(text)
 
     // Save to word bank
     // Save to word bank
