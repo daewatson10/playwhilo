@@ -34,7 +34,7 @@ const CLUE_SYSTEM = [
   '- The word should make someone say "oh of course!" when revealed',
   '- NEVER pick abstract concepts, emotions, or states of mind',
   '- 3-8 letters. NO common synonyms of similar length.',
-  '- NEVER use: wreath, bridge, roots, root, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness, soil, dirt, pupil, honey, lens, scar, puddle, shell, bread, whisker, wrinkle',
+  '- NEVER use: wreath, wrinkle, bridge, roots, root, anchor, tide, ember, threshold, mirror, fog, echo, shadow, drift, bloom, harbor, clearing, current, gravity, weight, stillness, soil, dirt, pupil, honey, lens, scar, puddle, shell, bread, whisker,',
   '',
   'RIDDLE RULES:',
   '- 3 sentences. Game show energy — punchy, confident, a little funny.',
