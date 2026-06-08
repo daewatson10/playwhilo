@@ -107,12 +107,14 @@ export default async function handler(req, res) {
     // Fetch used words from Firestore word bank
     let usedWords = []
     try {
+      console.log('Fetching word bank...')
       const db = await getAdminDb()
+      console.log('Admin DB connected')
       const snap = await db.collection('dailyPuzzles').orderBy('createdAt', 'desc').limit(200).get()
       usedWords = snap.docs.map(d => d.data().word).filter(Boolean)
       console.log('Word bank loaded:', usedWords.length, 'words:', usedWords.join(', '))
     } catch (e) {
-      console.error('Could not fetch used words:', e.message, e.code)
+      console.error('Could not fetch used words:', e.message, e.code, e.stack?.split('\n')[0])
     }
 
     const parsedDate = new Date(date + 'T12:00:00')
