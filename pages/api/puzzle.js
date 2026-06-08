@@ -110,8 +110,9 @@ export default async function handler(req, res) {
       const db = await getAdminDb()
       const snap = await db.collection('dailyPuzzles').orderBy('createdAt', 'desc').limit(200).get()
       usedWords = snap.docs.map(d => d.data().word).filter(Boolean)
+      console.log('Word bank loaded:', usedWords.length, 'words:', usedWords.join(', '))
     } catch (e) {
-      console.error('Could not fetch used words:', e)
+      console.error('Could not fetch used words:', e.message, e.code)
     }
 
     const parsedDate = new Date(date + 'T12:00:00')
